@@ -3,11 +3,11 @@
 This is a user authentication and management microservice following DDD and CQRS design patterns, built on top of MongoDB and the NestJS framework. It uses Docker, Terraform, and monitoring services like Prometheus.
 
 ## Table of Contents
-- [Features](#features)
-- [Environment Variables](#environment-variables)
-- [Local Deployment](#local-deployment)
-- [Production Deployment](#production-deployment)
-- [Monitoring](#monitoring)
+- Features
+- Environment Variables
+- Local Deployment
+- Production Deployment
+- Monitoring
 
 ## Features
 - User authentication and management
@@ -43,6 +43,7 @@ REDIS_PORT=6379
 
 ### Prerequisites
 - Docker installed on your machine
+- Node.js installed on your machine
 
 ### Steps
 1. Clone the repository:
@@ -51,12 +52,28 @@ REDIS_PORT=6379
     cd customer-ms
     ```
 
-2. Build the Docker image:
+2. Install dependencies:
+    ```sh
+    npm install
+    ```
+
+3. Run the application in development mode with real-time coding support:
+    ```sh
+    npm run start:dev
+    ```
+
+4. Alternatively, run the application using PM2 for better process management:
+    ```sh
+    pm2 start dist/main.js --name customer-ms
+    ```
+
+### Docker Deployment
+1. Build the Docker image:
     ```sh
     docker build -t customer-ms .
     ```
 
-3. Run the Docker container:
+2. Run the Docker container:
     ```sh
     docker run -p 3000:3000 --env-file .env customer-ms
     ```
