@@ -35,6 +35,7 @@ export class OpenAIService {
       );
     }
   }
+
   async generateConsultantReview(reviews: Review[]) {
     const prompt = this.buildReviewPrompt(reviews);
 
