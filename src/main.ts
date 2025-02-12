@@ -3,12 +3,13 @@ import { ValidationPipe, Logger } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import * as helmet from "helmet";
-import * as compression from "compression";
+import compression from "compression";
 import { ConfigService } from "@nestjs/config";
 import { PrometheusService } from "infrastructure/monitoring/prometheus.service";
 import { LoggingInterceptor } from "./infrastructure/monitoring/logging.interceptor";
 import { PrometheusController } from "./infrastructure/monitoring/prometheus.controller";
 import { TransformInterceptor } from "infrastructure/interceptors/transform.interceptor";
+import { SeederService } from "infrastructure/seeder/seeder.service";
 
 async function bootstrap() {
   try {
@@ -33,6 +34,10 @@ async function bootstrap() {
 
     // Prometheus Metrics
     setupPrometheus(app);
+
+    // Seed data
+    const seeder = app.get(SeederService);
+    await seeder.seed();
 
     // Start the application
     const port = configService.get<number>("PORT") || 3000;

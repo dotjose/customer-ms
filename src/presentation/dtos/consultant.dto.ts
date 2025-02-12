@@ -12,11 +12,13 @@ import {
   ValidatorConstraintInterface,
   Validate,
   IsUrl,
+  IsMongoId,
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { LocationDto } from "./auth.dto";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Consultant } from "domain/consultant/consultant.entity";
+import { BadRequestException } from "@nestjs/common";
 
 @ValidatorConstraint({ async: false })
 export class IsStartDateBeforeEndDate implements ValidatorConstraintInterface {
@@ -91,14 +93,14 @@ export class CreateConsultantProfileDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  consultantId?: string;
+  id?: string;
 
   @ApiProperty()
-  @IsString()
+  @IsMongoId()
   userId: string;
 
   @ApiProperty()
-  @IsString()
+  @IsMongoId()
   profession: string;
 
   @ApiProperty()
@@ -134,16 +136,26 @@ export class CreateConsultantProfileDto {
 export class SearchConsultantsDto {
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
+  @IsMongoId()
   profession?: string;
 
-  @ApiPropertyOptional({
-    type: LocationDto,
-    example: { longitude: 12.34, latitude: 56.78, address: "123 Main St" },
+  @ApiProperty({
+    required: false,
+    type: String,
+    example:
+      '{"type":"Point","coordinates":[12.34,56.78],"address":"123 Main St"}',
+    description: "Send location as a JSON string",
   })
-  @ValidateNested()
-  @Type(() => LocationDto)
   @IsOptional()
+  @Transform(({ value }) => {
+    try {
+      return JSON.parse(value);
+    } catch {
+      throw new BadRequestException(
+        "Invalid location format. Expected JSON string."
+      );
+    }
+  })
   location?: LocationDto;
 
   @ApiProperty({ required: false })

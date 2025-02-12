@@ -51,6 +51,7 @@ export class LocationDto {
   @IsEnum(["Point"]) // Enforce GeoJSON type
   type?: "Point";
 
+  @ApiProperty()
   @ApiPropertyOptional({ example: [12.34, 56.78] })
   @IsArray()
   @ArrayMinSize(2)
@@ -58,10 +59,13 @@ export class LocationDto {
   @IsNumber({}, { each: true })
   coordinates?: [number, number]; // [longitude, latitude]
 
+  @ApiProperty()
   @ApiPropertyOptional({ example: "123 Main St" })
   @IsOptional()
   @IsString()
   address?: string;
+
+  radius?: number = 150;
 }
 
 export class RegisterUserDto {
@@ -215,6 +219,7 @@ export class UserResponseDto {
   lastName: string;
   phoneNumber: string;
   email: string;
+  location: LocationDto;
   createdAt: Date;
   updatedAt: Date;
 

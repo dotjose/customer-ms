@@ -4,7 +4,6 @@ import {
   Post,
   Query,
   Body,
-  Search,
   Param,
   BadRequestException,
 } from "@nestjs/common";
@@ -20,6 +19,7 @@ import { GetNearbyConsultantsQuery } from "application/queries/consultant/get-ne
 import { UpdateConsultantProfileCommand } from "application/commands/consultant/update-profile.command";
 import { SearchConsultantsQuery } from "application/queries/consultant/search-consultants.query";
 import { GetConsultantDetailQuery } from "application/queries/consultant/get-consultant-detail.query";
+import { GetProfessionsQuery } from "application/queries/consultant/get-professions.query";
 
 @ApiTags("Consultants")
 @Controller("consultants")
@@ -51,7 +51,6 @@ export class ConsultantController {
   async searchConsultants(
     @Query() searchParams: SearchConsultantsDto
   ): Promise<ConsultantWithUserDetails[]> {
-    console.log(searchParams);
     if (
       searchParams.location?.coordinates &&
       searchParams.location?.coordinates?.length !== 2
@@ -84,5 +83,13 @@ export class ConsultantController {
   async createProfile(@Body() dto: CreateConsultantProfileDto) {
     const command = new UpdateConsultantProfileCommand(dto);
     return this.commandBus.execute(command);
+  }
+
+  @Get("/professions/list")
+  @ApiOperation({ summary: "Get professions list" })
+  @ApiResponse({ status: 200, description: "Returns list of professions" })
+  async getProfessions() {
+    const professions = await this.queryBus.execute(new GetProfessionsQuery());
+    return professions;
   }
 }

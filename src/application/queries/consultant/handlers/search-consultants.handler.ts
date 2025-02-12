@@ -21,54 +21,44 @@ export class SearchConsultantsHandler
   ) {}
 
   async execute(query: SearchConsultantsQuery) {
-    const {
-      profession,
-      page = 1,
-      limit = 20,
-      location,
-      sortBy = "distance",
-    } = query.params;
-    console.log(query);
+    const { profession, page = 1, limit = 20, location } = query.params;
     const cacheKey = `search:${JSON.stringify(query)}`;
     this.logger.log(`Executing SearchConsultantsQuery: ${cacheKey}`);
 
     try {
-      // Step 1: Fetch consultants based on preferences
-      const consultants = await this.fetchConsultants(
-        { coordinates: [12.34, 56.78], address: "123 Main St" },
-        profession
-      );
+      // Check Cache
+      const cachedResults =
+        await this.consultantSearchService.getCachedResults(cacheKey);
+      if (cachedResults) return cachedResults;
 
-      // Step 2: Handle small results (return early if fewer than 10 consultants)
-      if (consultants.length < 10) {
-        return {
-          consultants,
-          totalItems: consultants.length,
-          page: 1,
-          limit: consultants.length,
-          totalPages: 1,
-        };
-      }
-
-      // Step 3: Rank consultants using AI if we have more data to analyze
-      const rankedConsultants = await this.rankConsultants(consultants, {
+      // Fetch consultants sorted by distance
+      const { consultants, totalItems } = await this.fetchConsultants(
+        location,
         profession,
-        location: { coordinates: [12.34, 56.78], address: "123 Main St" },
-        sortBy,
-      });
-
-      // Step 4: Paginate the ranked results
-      const paginatedResults = this.paginateResults(
-        rankedConsultants,
         page,
         limit
       );
 
-      // Step 5: Cache results
-      await this.cacheResults(cacheKey, paginatedResults);
+      // Apply AI ranking only if more than 30 results exist, process only first 20
+      const processedConsultants =
+        totalItems > 30
+          ? await this.rankConsultants(consultants.slice(0, 20), {
+              profession,
+              location,
+              sortBy: "distance",
+            })
+          : consultants;
 
-      this.logger.log(`Returning paginated results for page ${page}`);
-      return paginatedResults;
+      const result = {
+        consultants: processedConsultants,
+        totalItems,
+        page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      };
+      await this.cacheResults(cacheKey, result);
+
+      return result;
     } catch (error) {
       this.logger.error(
         `Error executing SearchConsultantsQuery: ${error.message}`,
@@ -78,22 +68,24 @@ export class SearchConsultantsHandler
     }
   }
 
-  private async fetchConsultants(location: LocationDto, profession: string) {
+  private async fetchConsultants(
+    location: LocationDto,
+    profession: string,
+    page: number,
+    limit: number
+  ) {
     try {
-      this.logger.log("Fetching consultants from the database...");
-      const consultants =
-        await this.consultantRepository.getConsultantsByPreferences(
-          location,
-          profession
-        );
-      this.logger.log(`Found ${consultants.length} consultants.`);
-      return consultants;
-    } catch (error) {
-      this.logger.error(
-        "Error fetching consultants from the database",
-        error.stack
+      this.logger.log("Fetching consultants sorted by distance...");
+      return this.consultantRepository.getConsultantsByPreferences(
+        location,
+        profession,
+        page,
+        limit,
+        "distance"
       );
-      throw new Error("Failed to fetch consultants from the database.");
+    } catch (error) {
+      this.logger.error("Error fetching consultants", error.stack);
+      throw new Error("Failed to fetch consultants.");
     }
   }
 
@@ -102,41 +94,21 @@ export class SearchConsultantsHandler
     context: { profession: string; location: LocationDto; sortBy: string }
   ) {
     try {
-      this.logger.log("Ranking consultants using AI...");
-      const rankedConsultants = await this.openAIService.rankConsultants(
-        consultants,
-        context
-      );
-      this.logger.log(`AI ranked ${rankedConsultants.length} consultants.`);
-      return rankedConsultants;
+      this.logger.log("Applying AI ranking on first 20 consultants...");
+      return this.openAIService.rankConsultants(consultants, { ...context });
     } catch (error) {
-      this.logger.error("Error during AI ranking of consultants", error.stack);
+      this.logger.error("Error during AI ranking", error.stack);
       throw new Error("Failed to rank consultants using AI.");
     }
   }
 
-  private paginateResults(
-    consultants: ConsultantWithUserDetails[],
-    page: number,
-    limit: number
-  ) {
-    const totalItems = consultants.length;
-    const totalPages = Math.ceil(totalItems / limit);
-    const items = consultants.slice((page - 1) * limit, page * limit);
-
-    this.logger.debug(
-      `Pagination - Page: ${page}, Limit: ${limit}, Total Pages: ${totalPages}`
-    );
-    return { items, totalItems, page, limit, totalPages };
-  }
-
   private async cacheResults(cacheKey: string, results: any) {
     try {
-      this.logger.log(`Caching results with key: ${cacheKey}`);
+      this.logger.log(`Caching results: ${cacheKey}`);
       await this.consultantSearchService.cacheResults(cacheKey, results);
     } catch (error) {
       this.logger.error("Error during result caching", error.stack);
-      throw new Error("Failed to cache the search results.");
+      throw new Error("Failed to cache search results.");
     }
   }
 }

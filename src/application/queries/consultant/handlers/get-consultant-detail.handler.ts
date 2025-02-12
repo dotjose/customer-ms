@@ -15,7 +15,6 @@ export class GetConsultantDetailHandler
   ) {}
 
   async execute(query: GetConsultantDetailQuery) {
-    console.log(query);
     const { id } = query;
 
     this.logger.log(`Executing GetConsultantDetailQuery`, { id });

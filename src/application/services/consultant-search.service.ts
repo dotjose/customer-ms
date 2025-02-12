@@ -10,31 +10,38 @@ export class ConsultantSearchService {
   ) {}
 
   async searchConsultants(queryParams: any, cacheKey: string): Promise<any> {
-    // Check cache
-    const cachedResult = await this.redisService.get(cacheKey);
-    if (cachedResult) {
-      return JSON.parse(cachedResult);
-    }
+    // Step 1: Check cache
+    const cachedResult = await this.getCachedResults(cacheKey);
+    if (cachedResult) return cachedResult;
 
-    // Build Elasticsearch query
+    // Step 2: Fetch results from Elasticsearch
     const esQuery =
       this.elasticsearchService.buildConsultantSearchQuery(queryParams);
-
-    // Fetch results from Elasticsearch
     const searchResults = await this.elasticsearchService.search(
       "consultants",
       esQuery
     );
-    const consultantIds = searchResults.hits.hits.map((hit) => hit._id);
 
-    // Handle `hits.total` as a number or an object
+    const consultantIds = searchResults.hits.hits.map((hit) => hit._id);
     const totalHits =
       typeof searchResults.hits.total === "number"
         ? searchResults.hits.total
         : searchResults.hits.total.value;
 
-    // Return results
-    return { consultantIds, total: totalHits };
+    // Step 3: Cache and return results
+    const result = { consultantIds, total: totalHits };
+    await this.cacheResults(cacheKey, result);
+    return result;
+  }
+
+  async getCachedResults(cacheKey: string): Promise<any> {
+    try {
+      const cachedData = await this.redisService.get(cacheKey);
+      return cachedData ? JSON.parse(cachedData) : null;
+    } catch (error) {
+      console.error(`Error retrieving cache for key ${cacheKey}:`, error);
+      return null; // Avoid crashing if Redis fails
+    }
   }
 
   async cacheResults(
@@ -42,6 +49,10 @@ export class ConsultantSearchService {
     results: any,
     ttl: number = 300
   ): Promise<void> {
-    await this.redisService.set(cacheKey, JSON.stringify(results), ttl);
+    try {
+      await this.redisService.set(cacheKey, JSON.stringify(results), ttl);
+    } catch (error) {
+      console.error(`Error caching results for key ${cacheKey}:`, error);
+    }
   }
 }

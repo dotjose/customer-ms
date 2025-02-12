@@ -10,6 +10,7 @@ export class UserMapper {
       lastName: user.lastName,
       phoneNumber: user.phoneNumber,
       email: user.email,
+      location: user.location,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });

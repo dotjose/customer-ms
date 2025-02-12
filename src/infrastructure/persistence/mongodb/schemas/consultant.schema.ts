@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema } from "mongoose";
+import { Document, Schema as MongooseSchema, Types } from "mongoose";
 
 @Schema({ _id: false })
 class Education {
@@ -84,8 +84,8 @@ export class ConsultantDocument extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: "User" })
   userId: MongooseSchema.Types.ObjectId;
 
-  @Prop({ required: true })
-  profession: string;
+  @Prop({ type: Types.ObjectId, ref: "ProfessionDocument", required: true })
+  profession: Types.ObjectId;
 
   @Prop({ type: [String], required: true })
   skills: string[];
@@ -127,6 +127,7 @@ ConsultantSchema.index({ profession: 1 });
 ConsultantSchema.index({ skills: 1 });
 ConsultantSchema.index({ averageRating: -1 });
 ConsultantSchema.index({ hourlyRate: 1 });
+ConsultantSchema.index({ "locationDetails.coordinates": "2dsphere" });
 ConsultantSchema.index(
   {
     profession: "text",

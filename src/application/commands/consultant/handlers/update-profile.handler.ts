@@ -23,14 +23,16 @@ export class CreateOrUpdateConsultantHandler
     const { profile } = command;
     let consultant: Consultant | null = null;
     try {
-      const existingConsultant = profile.consultantId
-        ? await this.consultantRepository.findById(profile.consultantId)
+      const existingConsultant = profile.id
+        ? await this.consultantRepository.findById(profile.id)
         : null;
 
       if (existingConsultant) {
         existingConsultant.updateProfile({
           ...profile,
+          updatedAt: new Date(),
           userId: new ObjectId(profile.userId),
+          profession: new ObjectId(profile.profession),
         });
         await this.consultantRepository.save(existingConsultant);
         existingConsultant.apply(
@@ -52,6 +54,7 @@ export class CreateOrUpdateConsultantHandler
         const newConsultant = new Consultant({
           ...profile,
           userId: new ObjectId(profile.userId),
+          profession: new ObjectId(profile.profession),
           reviews: [],
           averageRating: 0,
           totalReviews: 0,

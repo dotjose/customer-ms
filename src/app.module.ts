@@ -42,6 +42,7 @@ import { GetNearbyConsultantsHandler } from "./application/queries/consultant/ha
 import { GetPaginatedReviewsHandler } from "./application/queries/reviews/handlers/get-paginated-reviews.handler";
 import { SearchConsultantsHandler } from "application/queries/consultant/handlers/search-consultants.handler";
 import { GetConsultantDetailHandler } from "application/queries/consultant/handlers/get-consultant-detail.handler";
+import { GetProfessionsHandler } from "application/queries/consultant/handlers/get-professions.handler";
 
 // Event Handlers
 import { UserRegisteredHandler } from "./application/events/user/handlers/user-registered.handler";
@@ -70,10 +71,12 @@ import { DatabaseService } from "infrastructure/services/database.service";
 import { RedisHealthIndicator } from "infrastructure/health/redis.health";
 import { ElasticsearchHealthIndicator } from "infrastructure/health/elasticsearch.health";
 import { OpenAIHealthIndicator } from "infrastructure/health/openai.health";
+import { SeederService } from "infrastructure/seeder/seeder.service";
 
 // Repositories
 import { MongoUserRepository } from "./infrastructure/repositories/mongodb/user.repository";
 import { MongoConsultantRepository } from "./infrastructure/repositories/mongodb/consultant.repository";
+import { MongoProfessionRepository } from "infrastructure/repositories/mongodb/profession.repository";
 
 // Schemas
 import {
@@ -84,6 +87,10 @@ import {
   ConsultantDocument,
   ConsultantSchema,
 } from "./infrastructure/persistence/mongodb/schemas/consultant.schema";
+import {
+  ProfessionDocument,
+  ProfessionSchema,
+} from "./infrastructure/persistence/mongodb/schemas/profession.schema";
 
 const commandHandlers = [
   LoginHandler,
@@ -104,6 +111,7 @@ const queryHandlers = [
   SearchConsultantsHandler,
   GetUserHandler,
   GetConsultantDetailHandler,
+  GetProfessionsHandler,
 ];
 
 const eventHandlers = [
@@ -132,6 +140,7 @@ const services = [
   OpenAIHealthIndicator,
   RedisHealthIndicator,
   ElasticsearchHealthIndicator,
+  SeederService,
 ];
 
 @Module({
@@ -157,6 +166,7 @@ const services = [
     MongooseModule.forFeature([
       { name: UserDocument.name, schema: UserSchema },
       { name: ConsultantDocument.name, schema: ConsultantSchema },
+      { name: ProfessionDocument.name, schema: ProfessionSchema },
     ]),
 
     // JWT
@@ -225,6 +235,10 @@ const services = [
     {
       provide: "ConsultantRepository",
       useClass: MongoConsultantRepository,
+    },
+    {
+      provide: "ProfessionRepository",
+      useClass: MongoProfessionRepository,
     },
 
     // Handlers and Services

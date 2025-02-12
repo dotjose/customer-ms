@@ -10,7 +10,10 @@ export interface ConsultantRepository {
   findByUserId(id: string): Promise<Consultant | null>;
   getConsultantsByPreferences(
     location: LocationDto,
-    profession: string
-  ): Promise<ConsultantWithUserDetails[]>;
+    profession: string,
+    page: number,
+    limit: number,
+    sortBy?: "rating" | "hourlyRate" | "distance" // Sorting field
+  ): Promise<{ consultants: ConsultantWithUserDetails[]; totalItems: number }>;
   save(consultant: Consultant): Promise<Consultant>;
 }

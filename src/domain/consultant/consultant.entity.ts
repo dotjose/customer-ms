@@ -38,7 +38,7 @@ interface AIReview {
 
 export interface ConsultantProps {
   userId: ObjectId;
-  profession: string;
+  profession: ObjectId;
   skills: string[];
   education: Education[];
   experience: Experience[];
@@ -72,7 +72,7 @@ export class Consultant extends AggregateRoot {
     return this.props.userId;
   }
 
-  get profession(): string {
+  get profession(): ObjectId {
     return this.props.profession;
   }
 
