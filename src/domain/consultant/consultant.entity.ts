@@ -41,7 +41,7 @@ export interface ConsultantProps {
   profession: ObjectId;
   skills: string[];
   education: Education[];
-  experience: Experience[];
+  experiences: Experience[];
   hourlyRate: number;
   resumeUrl?: string;
   avatarUrl?: string;
@@ -78,6 +78,14 @@ export class Consultant extends AggregateRoot {
 
   get skills(): string[] {
     return this.props.skills;
+  }
+
+  get experiences(): Experience[] {
+    return this.props.experiences;
+  }
+
+  get education(): Education[] {
+    return this.props.education;
   }
 
   get hourlyRate(): number {

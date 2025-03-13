@@ -52,14 +52,14 @@ export class EducationDto {
 
   @ApiProperty()
   @IsDate()
-  @Type(() => Date) // Ensures the value is transformed into a Date object
+  @Type(() => Date)
   startDate: Date;
 
   @ApiProperty()
   @IsDate()
   @Type(() => Date)
   @IsOptional()
-  @Validate(IsStartDateBeforeEndDate, [{ property: "startDate" }]) // Pass startDate for validation
+  @Validate(IsStartDateBeforeEndDate, [{ property: "startDate" }])
   endDate?: Date;
 }
 
@@ -116,7 +116,7 @@ export class CreateConsultantProfileDto {
   @ApiProperty({ type: [ExperienceDto], required: false })
   @ValidateNested({ each: true })
   @Type(() => ExperienceDto)
-  experience: ExperienceDto[] = [];
+  experiences: ExperienceDto[] = [];
 
   @ApiProperty()
   @IsNumber()

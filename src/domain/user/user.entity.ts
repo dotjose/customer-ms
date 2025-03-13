@@ -9,7 +9,6 @@ export interface SocialLink {
     | "twitter"
     | "instagram"
     | "linkedin"
-    | "github"
     | "youtube"
     | "tiktok";
   url: string;
@@ -101,6 +100,10 @@ export class User extends AggregateRoot {
 
   get socials(): SocialLink[] {
     return this.props.socialLinks;
+  }
+
+  get bio(): string {
+    return this.props.bio;
   }
 
   public verify(): void {

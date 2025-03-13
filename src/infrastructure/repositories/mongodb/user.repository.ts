@@ -48,7 +48,6 @@ export class MongoUserRepository implements UserRepository {
   async save(user: User): Promise<UserResponseDto> {
     // Convert the user entity to a plain object
     const userObj = user.toObject();
-    console.log(userObj);
     // Create a shallow copy and exclude invalid location data
     const transformedUserObj = {
       ...userObj,
@@ -59,7 +58,6 @@ export class MongoUserRepository implements UserRepository {
       transformedUserObj,
       { upsert: true, new: true }
     );
-    console.log("updating...", userDoc);
     return UserMapper.toResponse(new User(userDoc.toObject(), userDoc._id));
   }
 

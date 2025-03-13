@@ -25,8 +25,8 @@ export class UserDocument extends Document {
   @Prop({ default: false })
   isVerified: boolean;
 
-  @Prop()
-  phoneNumber?: string;
+  @Prop({ required: true, unique: true })
+  phoneNumber: string;
 
   @Prop({
     type: {
@@ -50,10 +50,13 @@ export class UserDocument extends Document {
     type?: "Point";
     coordinates?: [number, number];
     address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
   };
 
   @Prop()
-  avatarUrl?: string;
+  avatar?: string;
 
   @Prop()
   bio?: string;

@@ -11,6 +11,8 @@ export class UserMapper {
       phoneNumber: user.phoneNumber,
       email: user.email,
       location: user.location,
+      bio: user.bio,
+      social: user.socials,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });

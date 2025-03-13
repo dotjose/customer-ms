@@ -13,6 +13,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
     @InjectModel(ConsultantDocument.name)
     private readonly consultantModel: Model<ConsultantDocument>
   ) {}
+
   async getConsultantDetails(id: string): Promise<ConsultantWithUserDetails> {
     const consultantDetails = await this.consultantModel
       .aggregate([
@@ -26,30 +27,56 @@ export class MongoConsultantRepository implements ConsultantRepository {
             from: "users", // Lookup user details from the "users" collection
             localField: "userId",
             foreignField: "_id",
-            as: "userDetails", // Name the field that will contain user data
+            as: "userDetails",
           },
         },
         {
           $unwind: {
-            path: "$userDetails", // Flatten the userDetails array
-            preserveNullAndEmptyArrays: true, // Keep consultant even if userDetails is null
+            path: "$userDetails",
+            preserveNullAndEmptyArrays: true, // Allow consultants without users
+          },
+        },
+        {
+          $lookup: {
+            from: "professiondocuments", // Lookup profession details from "professions" collection
+            localField: "profession", // Reference from Consultant schema
+            foreignField: "_id",
+            as: "professionDetails",
+          },
+        },
+        {
+          $unwind: {
+            path: "$professionDetails",
+            preserveNullAndEmptyArrays: true, // Keep consultant even if profession is null
           },
         },
         {
           $project: {
-            id: "$_id", // Rename _id to id
-            profession: 1,
-            skills: 1,
+            id: "$_id",
+            profession: {
+              id: "$professionDetails._id",
+              name: { $ifNull: ["$professionDetails.name", "Unknown"] },
+              description: { $ifNull: ["$professionDetails.description", ""] },
+              icon: { $ifNull: ["$professionDetails.icon", ""] },
+            },
+            skills: { $ifNull: ["$skills", []] },
+            education: { $ifNull: ["$education", []] },
+            experiences: { $ifNull: ["$experiences", []] },
             hourlyRate: 1,
             averageRating: 1,
             totalReviews: 1,
             isAvailable: 1,
             createdAt: 1,
             updatedAt: 1,
-            "user.fullName": { $ifNull: ["$userDetails.fullName", "N/A"] },
-            "user.email": { $ifNull: ["$userDetails.email", "N/A"] },
-            "user.phone": { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
-            "user.location": { $ifNull: ["$userDetails.location", "N/A"] },
+            user: {
+              fullName: { $ifNull: ["$userDetails.fullName", "N/A"] },
+              email: { $ifNull: ["$userDetails.email", "N/A"] },
+              phone: { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
+              location: { $ifNull: ["$userDetails.location", "N/A"] },
+              avatarUrl: { $ifNull: ["$userDetails.avatarUrl", ""] },
+              bio: { $ifNull: ["$userDetails.bio", ""] },
+              socialLinks: { $ifNull: ["$userDetails.socialLinks", []] },
+            },
             reviews: { $slice: ["$reviews", 20] }, // Limit reviews to 20
           },
         },
@@ -68,6 +95,10 @@ export class MongoConsultantRepository implements ConsultantRepository {
 
     const consultant = await this.consultantModel
       .findOne({ _id: new Types.ObjectId(cleanId) })
+      .populate({
+        path: "profession",
+        model: "ProfessionDocument",
+      })
       .exec();
 
     return consultant ? this.toEntity(consultant) : null;
@@ -276,8 +307,6 @@ export class MongoConsultantRepository implements ConsultantRepository {
     // Pagination
     aggregationPipeline.push({ $skip: skip });
     aggregationPipeline.push({ $limit: limit });
-
-    console.log(JSON.stringify(aggregationPipeline, null, 2), "pipeline");
 
     // Count total items *after* filtering (using aggregation)
     const countAggregation = [...aggregationPipeline]; // Clone the pipeline

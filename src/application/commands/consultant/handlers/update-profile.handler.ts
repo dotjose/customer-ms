@@ -39,7 +39,7 @@ export class CreateOrUpdateConsultantHandler
           new ConsultantProfileUpdatedEvent(existingConsultant.id, {
             userId: existingConsultant.userId.toString(),
             education: profile.education,
-            experience: profile.experience,
+            experiences: profile.experiences,
             isAvailable: profile.isAvailable,
             profession: profile.profession,
             skills: profile.skills,
@@ -68,7 +68,7 @@ export class CreateOrUpdateConsultantHandler
             new ObjectId(newConsultant.userId),
             JSON.stringify({
               education: profile.education,
-              experience: profile.experience,
+              experiences: profile.experiences,
               isAvailable: profile.isAvailable,
               profession: profile.profession,
               skills: profile.skills,

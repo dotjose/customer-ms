@@ -28,14 +28,12 @@ export class UpdatePasswordHandler
       timestamp: new Date().toISOString(),
     });
 
-    // Validate user existance
     const user = await this.userRepository.findById(command.userId);
     if (!user) {
       this.logger.warn(`User not found with id ${command.userId}`);
       throw new NotFoundException("User not found");
     }
 
-    // Validate password
     const isPasswordValid = await this.hashService.compare(
       command.currentPassword,
       user.password
@@ -50,6 +48,7 @@ export class UpdatePasswordHandler
     try {
       const hashedPassword = await this.hashService.hash(command.newPassword);
       user.updatePassword(hashedPassword);
+      await this.userRepository.save(user);
 
       this.eventBus.publish(
         new PasswordResetCompletedEvent("Password update completed", user.email)
@@ -63,7 +62,7 @@ export class UpdatePasswordHandler
 
       return { message: "Password successfully updated" };
     } catch (error) {
-      this.logger.error("Error during password updated", {
+      this.logger.error("Error during password update", {
         userId: user?.id,
         email: user?.email,
         error,

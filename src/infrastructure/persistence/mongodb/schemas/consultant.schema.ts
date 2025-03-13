@@ -94,7 +94,7 @@ export class ConsultantDocument extends Document {
   education: Education[];
 
   @Prop({ type: [Experience], required: true })
-  experience: Experience[];
+  experiences: Experience[];
 
   @Prop({ required: true })
   hourlyRate: number;

@@ -35,7 +35,6 @@ export class SocialLinkDto {
     | "twitter"
     | "instagram"
     | "linkedin"
-    | "github"
     | "youtube"
     | "tiktok";
 
@@ -64,6 +63,21 @@ export class LocationDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  state?: string;
 
   radius?: number = 150;
 }
@@ -179,29 +193,34 @@ export class UpdateUserDto {
   avatar?: string;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   firstName?: string;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   lastName?: string;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @IsEmail()
   email?: string;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   phone?: string;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   bio?: string;
 
   @ApiPropertyOptional({ type: SocialLinkDto })
   @ValidateNested({ each: true })
   @Type(() => SocialLinkDto)
-  socialLinks: SocialLinkDto[];
+  socialLinks?: SocialLinkDto[];
 
   @ApiPropertyOptional({ type: LocationDto })
   @ValidateNested()
@@ -219,6 +238,8 @@ export class UserResponseDto {
   lastName: string;
   phoneNumber: string;
   email: string;
+  bio: string;
+  social: SocialLinkDto[];
   location: LocationDto;
   createdAt: Date;
   updatedAt: Date;
