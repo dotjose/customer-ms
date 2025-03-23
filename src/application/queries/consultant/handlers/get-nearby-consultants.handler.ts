@@ -1,8 +1,9 @@
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
+import { Inject, Logger } from "@nestjs/common";
+
 import { GetNearbyConsultantsQuery } from "../get-nearby-consultants.query";
 import { ConsultantRepository } from "domain/consultant/consultant.repository";
 import { ConsultantSearchService } from "application/services/consultant-search.service";
-import { Inject, Logger } from "@nestjs/common";
 import { ConsultantWithUserDetails } from "presentation/dtos/consultant.dto";
 import { PaginatedResultDTO } from "presentation/dtos/common.dto";
 

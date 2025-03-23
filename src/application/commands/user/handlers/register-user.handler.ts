@@ -28,8 +28,10 @@ export class RegisterUserHandler
       timestamp: new Date().toISOString(),
     });
 
-    const existingUser =
-      await this.userRepository.findByEmailOrPhone(normalizedEmail);
+    const existingUser = await this.userRepository.findByEmailAndPhone(
+      normalizedEmail,
+      command.phoneNumber
+    );
 
     if (existingUser) {
       this.logger.error("Duplicate user detected", {

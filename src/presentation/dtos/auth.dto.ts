@@ -115,9 +115,6 @@ export class LoginDto {
   @Validate(IsEmailOrPhone)
   contact: string;
 
-  @IsString()
-  email: string;
-
   @ApiProperty({ example: "StrongPass123!" })
   @IsString()
   password: string;
@@ -164,8 +161,10 @@ export class VerifyCodeDto {
   @IsString()
   code: string;
 
+  @ApiProperty({ default: NotificiationChannel.sms })
+  @IsOptional()
   @IsEnum(NotificiationChannel)
-  type: NotificiationChannel;
+  type?: NotificiationChannel;
 }
 
 export class UpdatePasswordDto {

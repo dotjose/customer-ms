@@ -104,6 +104,10 @@ export class Consultant extends AggregateRoot {
     return this.props.averageRating;
   }
 
+  get resumeUrl(): string {
+    return this.props.resumeUrl;
+  }
+
   public addReview(review: Review): void {
     this.props.reviews.push(review);
     this.updateAverageRating();

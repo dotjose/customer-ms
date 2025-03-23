@@ -50,7 +50,7 @@ export class SearchConsultantsHandler
           : consultants;
 
       const result = {
-        consultants: processedConsultants,
+        items: processedConsultants,
         totalItems,
         page,
         limit,

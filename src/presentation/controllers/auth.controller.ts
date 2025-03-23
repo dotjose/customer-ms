@@ -55,7 +55,7 @@ export class AuthController {
   @ApiOperation({ summary: "User login" })
   @ApiResponse({ status: 200, description: "Login successful" })
   async login(@Body() dto: LoginDto) {
-    const command = new LoginCommand(dto.email, dto.password);
+    const command = new LoginCommand(dto.contact, dto.password);
     return this.commandBus.execute(command);
   }
 

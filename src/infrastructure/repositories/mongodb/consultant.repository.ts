@@ -19,12 +19,12 @@ export class MongoConsultantRepository implements ConsultantRepository {
       .aggregate([
         {
           $match: {
-            _id: new Types.ObjectId(id), // Match the specific consultant by ID
+            _id: new Types.ObjectId(id),
           },
         },
         {
           $lookup: {
-            from: "users", // Lookup user details from the "users" collection
+            from: "users",
             localField: "userId",
             foreignField: "_id",
             as: "userDetails",
@@ -33,13 +33,13 @@ export class MongoConsultantRepository implements ConsultantRepository {
         {
           $unwind: {
             path: "$userDetails",
-            preserveNullAndEmptyArrays: true, // Allow consultants without users
+            preserveNullAndEmptyArrays: true,
           },
         },
         {
           $lookup: {
-            from: "professiondocuments", // Lookup profession details from "professions" collection
-            localField: "profession", // Reference from Consultant schema
+            from: "professiondocuments",
+            localField: "profession",
             foreignField: "_id",
             as: "professionDetails",
           },
@@ -47,9 +47,42 @@ export class MongoConsultantRepository implements ConsultantRepository {
         {
           $unwind: {
             path: "$professionDetails",
-            preserveNullAndEmptyArrays: true, // Keep consultant even if profession is null
+            preserveNullAndEmptyArrays: true,
           },
         },
+        // --- UNWIND reviews ---
+        {
+          $unwind: {
+            path: "$reviews",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // --- SORT reviews by createdAt descending ---
+        {
+          $sort: {
+            "reviews.createdAt": -1,
+          },
+        },
+        // --- GROUP back to array ---
+        {
+          $group: {
+            _id: "$_id",
+            doc: { $first: "$$ROOT" }, // keep other fields
+            sortedReviews: { $push: "$reviews" },
+          },
+        },
+        // --- LIMIT to 20 ---
+        {
+          $addFields: {
+            "doc.reviews": { $slice: ["$sortedReviews", 20] },
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$doc",
+          },
+        },
+        // --- FINAL PROJECT ---
         {
           $project: {
             id: "$_id",
@@ -69,15 +102,16 @@ export class MongoConsultantRepository implements ConsultantRepository {
             createdAt: 1,
             updatedAt: 1,
             user: {
-              fullName: { $ifNull: ["$userDetails.fullName", "N/A"] },
+              firstName: { $ifNull: ["$userDetails.firstName", "N/A"] },
+              lastName: { $ifNull: ["$userDetails.lastName", "N/A"] },
               email: { $ifNull: ["$userDetails.email", "N/A"] },
               phone: { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
               location: { $ifNull: ["$userDetails.location", "N/A"] },
-              avatarUrl: { $ifNull: ["$userDetails.avatarUrl", ""] },
+              avatar: { $ifNull: ["$userDetails.avatar", ""] },
               bio: { $ifNull: ["$userDetails.bio", ""] },
               socialLinks: { $ifNull: ["$userDetails.socialLinks", []] },
             },
-            reviews: { $slice: ["$reviews", 20] }, // Limit reviews to 20
+            reviews: 1,
           },
         },
       ])
@@ -189,9 +223,28 @@ export class MongoConsultantRepository implements ConsultantRepository {
           },
         },
         {
+          $lookup: {
+            from: "professiondocuments", // Lookup profession details from "professions" collection
+            localField: "profession", // Reference from Consultant schema
+            foreignField: "_id",
+            as: "professionDetails",
+          },
+        },
+        {
+          $unwind: {
+            path: "$professionDetails",
+            preserveNullAndEmptyArrays: true, // Keep consultant even if profession is null
+          },
+        },
+        {
           $project: {
             id: "$_id",
-            profession: 1,
+            profession: {
+              id: "$professionDetails._id",
+              name: { $ifNull: ["$professionDetails.name", "Unknown"] },
+              description: { $ifNull: ["$professionDetails.description", ""] },
+              icon: { $ifNull: ["$professionDetails.icon", ""] },
+            },
             skills: 1,
             hourlyRate: 1,
             averageRating: 1,
@@ -199,10 +252,12 @@ export class MongoConsultantRepository implements ConsultantRepository {
             isAvailable: 1,
             createdAt: 1,
             updatedAt: 1,
-            "user.fullName": { $ifNull: ["$userDetails.fullName", "N/A"] },
+            "user.firstName": { $ifNull: ["$userDetails.firstName", "N/A"] },
+            "user.lastName": { $ifNull: ["$userDetails.lastName", "N/A"] },
             "user.email": { $ifNull: ["$userDetails.email", "N/A"] },
             "user.phone": { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
             "user.location": { $ifNull: ["$userDetails.location", "N/A"] },
+            "user.avatar": { $ifNull: ["$userDetails.avatar", ""] },
           },
         },
       ])
@@ -229,6 +284,22 @@ export class MongoConsultantRepository implements ConsultantRepository {
 
     // Initial match stage using the query object
     aggregationPipeline.push({ $match: query });
+
+    aggregationPipeline.push({
+      $lookup: {
+        from: "professiondocuments", // Lookup profession details from "professions" collection
+        localField: "profession", // Reference from Consultant schema
+        foreignField: "_id",
+        as: "professionDetails",
+      },
+    });
+
+    aggregationPipeline.push({
+      $unwind: {
+        path: "$professionDetails",
+        preserveNullAndEmptyArrays: true, // Keep consultant even if profession is null
+      },
+    });
 
     // Lookup user details (this includes location)
     aggregationPipeline.push({
@@ -274,20 +345,27 @@ export class MongoConsultantRepository implements ConsultantRepository {
     aggregationPipeline.push({
       $project: {
         id: "$_id",
-        profession: 1,
+        profession: {
+          id: "$professionDetails._id",
+          name: { $ifNull: ["$professionDetails.name", "Unknown"] },
+          description: { $ifNull: ["$professionDetails.description", ""] },
+          icon: { $ifNull: ["$professionDetails.icon", ""] },
+        },
         skills: 1,
         hourlyRate: 1,
         averageRating: 1,
         totalReviews: 1,
         isAvailable: 1,
+        updatedAt: 1,
         createdAt: 1,
         location: "$userDetails.location", // User location
         distance: 1, // Include the distance in the projection
-        user: {
-          fullName: "$userDetails.firstName",
-          email: "$userDetails.email",
-          phone: "$userDetails.phoneNumber",
-        },
+        "user.firstName": { $ifNull: ["$userDetails.firstName", "N/A"] },
+        "user.lastName": { $ifNull: ["$userDetails.lastName", "N/A"] },
+        "user.email": { $ifNull: ["$userDetails.email", "N/A"] },
+        "user.phone": { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
+        "user.location": { $ifNull: ["$userDetails.location", "N/A"] },
+        "user.avatar": { $ifNull: ["$userDetails.avatar", ""] },
       },
     });
 

@@ -15,10 +15,11 @@ import {
   IsMongoId,
 } from "class-validator";
 import { Transform, Type } from "class-transformer";
-import { LocationDto } from "./auth.dto";
 import { ApiProperty } from "@nestjs/swagger";
-import { Consultant } from "domain/consultant/consultant.entity";
 import { BadRequestException } from "@nestjs/common";
+
+import { LocationDto } from "./auth.dto";
+import { Consultant } from "domain/consultant/consultant.entity";
 
 @ValidatorConstraint({ async: false })
 export class IsStartDateBeforeEndDate implements ValidatorConstraintInterface {

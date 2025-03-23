@@ -14,6 +14,16 @@ export class MongoUserRepository implements UserRepository {
     private readonly userModel: Model<UserDocument>
   ) {}
 
+  async findByEmailAndPhone(
+    email: string,
+    phone: string
+  ): Promise<User | null> {
+    const user = await this.userModel
+      .findOne({ email, phoneNumber: phone })
+      .exec();
+    return user ? this.toEntity(user) : null;
+  }
+
   async findById(id: string): Promise<User | null> {
     const cleanId = id.trim(); // Remove any unwanted whitespace/newline characters
 
