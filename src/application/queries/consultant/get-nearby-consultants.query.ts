@@ -4,8 +4,8 @@ import { LocationDto } from "presentation/dtos/auth.dto";
 export interface GetNearbyConsultantsParams {
   location?: LocationDto;
   radius?: number;
-  page?: number;
-  limit?: number;
+  page?: string;
+  limit?: string;
   profession?: string;
   minRating?: number;
   maxHourlyRate?: number;

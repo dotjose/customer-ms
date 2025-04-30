@@ -6,6 +6,7 @@ import { Consultant } from "domain/consultant/consultant.entity";
 import { ConsultantRepository } from "domain/consultant/consultant.repository";
 import { ConsultantWithUserDetails } from "presentation/dtos/consultant.dto";
 import { LocationDto } from "presentation/dtos/auth.dto";
+import { PaginatedResultDTO } from "presentation/dtos/common.dto";
 
 @Injectable()
 export class MongoConsultantRepository implements ConsultantRepository {
@@ -174,10 +175,17 @@ export class MongoConsultantRepository implements ConsultantRepository {
             isAvailable: 1,
             createdAt: 1,
             updatedAt: 1,
-            "user.fullName": { $ifNull: ["$userDetails.fullName", "N/A"] },
-            "user.email": { $ifNull: ["$userDetails.email", "N/A"] },
-            "user.phone": { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
-            "user.location": { $ifNull: ["$userDetails.location", "N/A"] },
+            user: {
+              firstName: { $ifNull: ["$userDetails.firstName", "N/A"] },
+              lastName: { $ifNull: ["$userDetails.lastName", "N/A"] },
+              email: { $ifNull: ["$userDetails.email", "N/A"] },
+              phone: { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
+              location: { $ifNull: ["$userDetails.location", "N/A"] },
+              avatar: { $ifNull: ["$userDetails.avatar", ""] },
+              bio: { $ifNull: ["$userDetails.bio", ""] },
+              socialLinks: { $ifNull: ["$userDetails.socialLinks", []] },
+            },
+            reviews: 1,
           },
         },
       ])
@@ -200,156 +208,242 @@ export class MongoConsultantRepository implements ConsultantRepository {
     return consultant ? this.toEntity(consultant) : null;
   }
 
-  async findAll(): Promise<ConsultantWithUserDetails[]> {
-    return this.consultantModel
-      .aggregate([
-        {
-          $match: {
-            isAvailable: true, // Only include available consultants
-          },
+  async findAll(
+    page: number,
+    limit: number
+  ): Promise<{
+    data: ConsultantWithUserDetails[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+    const aggregationPipeline = [
+      {
+        $match: {
+          isAvailable: true,
         },
-        {
-          $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "userDetails",
-          },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
         },
-        {
-          $unwind: {
-            path: "$userDetails",
-            preserveNullAndEmptyArrays: true,
-          },
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true,
         },
-        {
-          $lookup: {
-            from: "professiondocuments", // Lookup profession details from "professions" collection
-            localField: "profession", // Reference from Consultant schema
-            foreignField: "_id",
-            as: "professionDetails",
-          },
+      },
+      {
+        $lookup: {
+          from: "professiondocuments",
+          localField: "profession",
+          foreignField: "_id",
+          as: "professionDetails",
         },
-        {
-          $unwind: {
-            path: "$professionDetails",
-            preserveNullAndEmptyArrays: true, // Keep consultant even if profession is null
-          },
+      },
+      {
+        $unwind: {
+          path: "$professionDetails",
+          preserveNullAndEmptyArrays: true,
         },
-        {
-          $project: {
-            id: "$_id",
-            profession: {
-              id: "$professionDetails._id",
-              name: { $ifNull: ["$professionDetails.name", "Unknown"] },
-              description: { $ifNull: ["$professionDetails.description", ""] },
-              icon: { $ifNull: ["$professionDetails.icon", ""] },
+      },
+      {
+        $facet: {
+          metadata: [
+            { $count: "total" },
+            { $addFields: { page, limit } },
+          ],
+          data: [
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $project: {
+                id: "$_id",
+                profession: {
+                  id: "$professionDetails._id",
+                  name: { $ifNull: ["$professionDetails.name", "Unknown"] },
+                  description: { $ifNull: ["$professionDetails.description", ""] },
+                  icon: { $ifNull: ["$professionDetails.icon", ""] },
+                },
+                skills: 1,
+                hourlyRate: 1,
+                averageRating: 1,
+                totalReviews: 1,
+                isAvailable: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                user: {
+                  firstName: { $ifNull: ["$userDetails.firstName", "N/A"] },
+                  lastName: { $ifNull: ["$userDetails.lastName", "N/A"] },
+                  email: { $ifNull: ["$userDetails.email", "N/A"] },
+                  phone: { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
+                  location: { $ifNull: ["$userDetails.location", "N/A"] },
+                  avatar: { $ifNull: ["$userDetails.avatar", ""] },
+                  bio: { $ifNull: ["$userDetails.bio", ""] },
+                  socialLinks: { $ifNull: ["$userDetails.socialLinks", []] },
+                },
+                reviews: 1,
+              },
             },
-            skills: 1,
-            hourlyRate: 1,
-            averageRating: 1,
-            totalReviews: 1,
-            isAvailable: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            "user.firstName": { $ifNull: ["$userDetails.firstName", "N/A"] },
-            "user.lastName": { $ifNull: ["$userDetails.lastName", "N/A"] },
-            "user.email": { $ifNull: ["$userDetails.email", "N/A"] },
-            "user.phone": { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
-            "user.location": { $ifNull: ["$userDetails.location", "N/A"] },
-            "user.avatar": { $ifNull: ["$userDetails.avatar", ""] },
+          ],
+        },
+      },
+      {
+        $unwind: "$metadata",
+      },
+      {
+        $project: {
+          data: 1,
+          total: "$metadata.total",
+          page: "$metadata.page",
+          totalPages: {
+            $ceil: { $divide: ["$metadata.total", "$metadata.limit"] },
           },
         },
-      ])
-      .exec();
+      },
+    ];
+  
+    const result = await this.consultantModel.aggregate(aggregationPipeline).exec();
+    
+    return result[0] || {
+      data: [],
+      total: 0,
+      page,
+      totalPages: 0,
+    };
   }
 
   async getConsultantsByPreferences(
     location: LocationDto | null,
     profession: string | null,
-    page: number,
-    limit: number,
+    page: number = 1,
+    limit: number = 20,
     sortBy?: "rating" | "hourlyRate" | "distance"
-  ): Promise<{ consultants: ConsultantWithUserDetails[]; totalItems: number }> {
+  ): Promise<PaginatedResultDTO<ConsultantWithUserDetails>> {
     const skip = (page - 1) * limit;
-
-    // Build the initial query object
-    const query: any = { isAvailable: true }; // Start with isAvailable
-
+  
+    // 1. Build the base pipeline stages
+    const pipeline = this.buildBasePipeline(profession, location);
+  
+    // 2. Add sorting
+    this.addSortingStage(pipeline, sortBy, location);
+  
+    // 3. Get paginated results and total count in a single round trip
+    const [result] = await this.consultantModel.aggregate([
+      {
+        $facet: {
+          metadata: [
+            ...pipeline,
+            { $count: "total" }
+          ],
+          data: [
+            ...pipeline,
+            { $skip: skip },
+            { $limit: limit }
+          ]
+        }
+      },
+      {
+        $project: {
+          consultants: "$data",
+          total: { $arrayElemAt: ["$metadata.total", 0] },
+          page: { $literal: page },
+          limit: { $literal: limit },
+          totalPages: {
+            $ceil: {
+              $divide: [
+                { $arrayElemAt: ["$metadata.total", 0] },
+                limit
+              ]
+            }
+          }
+        }
+      }
+    ]).exec();
+  
+    return {
+      items: result?.consultants || [],
+      total: result?.total || 0,
+      page,
+      limit,
+      totalPages: result?.totalPages || 0
+    };
+  }
+  
+  // Helper methods for pipeline construction
+  private buildBasePipeline(profession: string | null, location: LocationDto | null): any[] {
+    const pipeline: any[] = [];
+    const matchStage: any = { isAvailable: true };
+  
     if (profession) {
-      query.profession = new Types.ObjectId(profession); // Convert to ObjectId
+      matchStage.profession = new Types.ObjectId(profession);
     }
-
-    const aggregationPipeline: any[] = [];
-
-    // Initial match stage using the query object
-    aggregationPipeline.push({ $match: query });
-
-    aggregationPipeline.push({
-      $lookup: {
-        from: "professiondocuments", // Lookup profession details from "professions" collection
-        localField: "profession", // Reference from Consultant schema
-        foreignField: "_id",
-        as: "professionDetails",
+  
+    pipeline.push({ $match: matchStage });
+  
+    // Profession details lookup
+    pipeline.push(
+      {
+        $lookup: {
+          from: "professiondocuments",
+          localField: "profession",
+          foreignField: "_id",
+          as: "professionDetails"
+        }
       },
-    });
-
-    aggregationPipeline.push({
-      $unwind: {
-        path: "$professionDetails",
-        preserveNullAndEmptyArrays: true, // Keep consultant even if profession is null
+      {
+        $unwind: {
+          path: "$professionDetails",
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    );
+  
+    // User details lookup
+    pipeline.push(
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
       },
-    });
-
-    // Lookup user details (this includes location)
-    aggregationPipeline.push({
-      $lookup: {
-        from: "users",
-        localField: "userId",
-        foreignField: "_id",
-        as: "userDetails",
-      },
-    });
-    aggregationPipeline.push({
-      $unwind: { path: "$userDetails", preserveNullAndEmptyArrays: true },
-    });
-
-    // GeoJSON filtering (conditionally added)
-    // Apply location filter if coordinates are provided
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    );
+  
+    // Location filtering
     if (location?.coordinates) {
-      aggregationPipeline.push({
+      pipeline.push({
         $match: {
           "userDetails.location.coordinates": {
             $geoWithin: {
-              $centerSphere: [location.coordinates, 0.02354], // ~1.5 mile radius
-            },
-          },
-        },
+              $centerSphere: [location.coordinates, 0.02354] // ~1.5 mile radius
+            }
+          }
+        }
       });
     }
-
-    // Lookup location details from "locations" collection (if needed)
-    aggregationPipeline.push({
-      $lookup: {
-        from: "locations",
-        localField: "locationId",
-        foreignField: "_id",
-        as: "locationDetails",
-      },
-    });
-    aggregationPipeline.push({
-      $unwind: { path: "$locationDetails", preserveNullAndEmptyArrays: true },
-    });
-
-    // Project only necessary fields
-    aggregationPipeline.push({
+  
+    // Projection
+    pipeline.push({
       $project: {
         id: "$_id",
         profession: {
           id: "$professionDetails._id",
           name: { $ifNull: ["$professionDetails.name", "Unknown"] },
           description: { $ifNull: ["$professionDetails.description", ""] },
-          icon: { $ifNull: ["$professionDetails.icon", ""] },
+          icon: { $ifNull: ["$professionDetails.icon", ""] }
         },
         skills: 1,
         hourlyRate: 1,
@@ -358,49 +452,41 @@ export class MongoConsultantRepository implements ConsultantRepository {
         isAvailable: 1,
         updatedAt: 1,
         createdAt: 1,
-        location: "$userDetails.location", // User location
-        distance: 1, // Include the distance in the projection
-        "user.firstName": { $ifNull: ["$userDetails.firstName", "N/A"] },
-        "user.lastName": { $ifNull: ["$userDetails.lastName", "N/A"] },
-        "user.email": { $ifNull: ["$userDetails.email", "N/A"] },
-        "user.phone": { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
-        "user.location": { $ifNull: ["$userDetails.location", "N/A"] },
-        "user.avatar": { $ifNull: ["$userDetails.avatar", ""] },
-      },
+        location: "$userDetails.location",
+        distance: 1,
+        user: {
+          firstName: { $ifNull: ["$userDetails.firstName", "N/A"] },
+          lastName: { $ifNull: ["$userDetails.lastName", "N/A"] },
+          email: { $ifNull: ["$userDetails.email", "N/A"] },
+          phone: { $ifNull: ["$userDetails.phoneNumber", "N/A"] },
+          location: { $ifNull: ["$userDetails.location", "N/A"] },
+          avatar: { $ifNull: ["$userDetails.avatar", ""] },
+          bio: { $ifNull: ["$userDetails.bio", ""] },
+          socialLinks: { $ifNull: ["$userDetails.socialLinks", []] }
+        },
+        reviews: 1
+      }
     });
-
-    // Dynamic sorting logic
-    const sortStage: any = { $sort: { createdAt: -1 } }; // Default sorting
-
+  
+    return pipeline;
+  }
+  
+  private addSortingStage(pipeline: any[], sortBy?: string, location?: LocationDto | null): void {
+    const sortStage: any = { $sort: {} };
+  
+    // Default sorting
+    sortStage.$sort.createdAt = -1;
+  
+    // Apply additional sorting criteria
     if (sortBy === "rating") {
       sortStage.$sort.averageRating = -1;
     } else if (sortBy === "hourlyRate") {
       sortStage.$sort.hourlyRate = 1;
     } else if (sortBy === "distance" && location?.coordinates) {
-      sortStage.$sort.distance = 1; // Sort by calculated distance
+      sortStage.$sort.distance = 1;
     }
-
-    aggregationPipeline.push(sortStage);
-
-    // Pagination
-    aggregationPipeline.push({ $skip: skip });
-    aggregationPipeline.push({ $limit: limit });
-
-    // Count total items *after* filtering (using aggregation)
-    const countAggregation = [...aggregationPipeline]; // Clone the pipeline
-    countAggregation.pop(); // Remove the $skip and $limit stages
-    countAggregation.push({ $count: "total" }); // Add a $count stage
-
-    const countResult = await this.consultantModel
-      .aggregate(countAggregation)
-      .exec();
-    const totalItems = countResult.length > 0 ? countResult[0].total : 0;
-
-    const consultants = await this.consultantModel
-      .aggregate(aggregationPipeline)
-      .exec();
-
-    return { consultants, totalItems };
+  
+    pipeline.push(sortStage);
   }
 
   async save(consultant: Consultant): Promise<Consultant> {

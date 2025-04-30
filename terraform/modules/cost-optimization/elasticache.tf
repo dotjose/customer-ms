@@ -1,7 +1,7 @@
 resource "aws_elasticache_cluster" "redis" {
   cluster_id           = "user-management-redis"
   engine              = "redis"
-  node_type           = "cache.t4g.micro"  # Cost-effective ARM-based instance
+  node_type           = "cache.t4g.micro"
   num_cache_nodes     = 1
   parameter_group_name = "default.redis6.x"
   port                = 6379

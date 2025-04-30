@@ -59,7 +59,7 @@ export class ConsultantController {
         "Coordinates must be [longitude, latitude]"
       );
     }
-
+    
     const query = new SearchConsultantsQuery(searchParams);
     return this.queryBus.execute(query);
   }

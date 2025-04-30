@@ -171,13 +171,11 @@ export class SearchConsultantsDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  page?: number;
+  page?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  limit?: number;
+  limit?: string;
 
   @ApiProperty({ required: false, enum: ["rating", "hourlyRate", "distance"] })
   @IsOptional()
@@ -197,5 +195,6 @@ export interface ConsultantWithUserDetails {
     email: string;
     phone: string;
     location: LocationDto;
+    avatar: string;
   };
 }
