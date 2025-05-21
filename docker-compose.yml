@@ -8,9 +8,9 @@ services:
       - "3002:3002"
     environment:
       MONGODB_URI: mongodb://shared-mongodb:27017/user-management
-      REDIS_URL: redis://shared-redis:6379
-      REDIS_HOST: redis://shared-redis
+      REDIS_HOST: shared-redis
       REDIS_PORT: 6379
+      REDIS_URL: redis://shared-redis:6379
       ELASTICSEARCH_URL: http://shared-elasticsearch:9200
       JWT_SECRET: ${JWT_SECRET}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
