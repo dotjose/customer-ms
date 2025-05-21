@@ -20,4 +20,3 @@ services:
 
 networks:
   shared-backend:
-    external: true

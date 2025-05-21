@@ -14,7 +14,11 @@ export class OpenAIService {
     if (!apiKey) {
       throw new InternalServerErrorException("Missing OpenAI API key");
     }
-    this.openai = new OpenAI({ apiKey });
+
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL,
+    });
   }
 
   setApiKey(apiKey: string) {
@@ -40,7 +44,7 @@ export class OpenAIService {
     const prompt = this.buildReviewPrompt(reviews);
 
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4",
+      model: "llama-3.1-8b-instant",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       max_tokens: 500,
@@ -91,7 +95,9 @@ Format as JSON.`;
     const prompt = `
     You are an AI that helps rank consultants (mostly maids and handy persons) for a user. 
     Prioritize consultants based on the following factors:
-    - Proximity to the user's location: ${location.address}, latitude:${location.coordinates[1]}, longitude: ${location.coordinates[0]}
+    - Proximity to the user's location: ${location.address}, latitude:${
+      location.coordinates[1]
+    }, longitude: ${location.coordinates[0]}
     - Match with the user's profession: ${profession} (e.g., maid, handy person, cleaner)
     - Rating: Highest rating
     - Sort by: ${sortBy}
@@ -119,7 +125,7 @@ Format as JSON.`;
 
   private async callOpenAI(prompt: string): Promise<any[]> {
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4",
+      model: "llama-3.1-8b-instant",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       max_tokens: 500,
