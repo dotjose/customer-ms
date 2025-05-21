@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { randomInt } from "crypto"; // Secure random number generator
+import { randomInt } from "crypto";
 import { Cache } from "cache-manager";
 
 export interface VerificationTokenPayload {
@@ -12,9 +12,7 @@ export interface VerificationTokenPayload {
 export class VerificationTokenService {
   private readonly tokenExpiryMinutes = 5;
 
-  constructor(
-    @Inject("CACHE_MANAGER") private readonly cacheManager: Cache // Using cache to store tokens
-  ) {}
+  constructor(@Inject("CACHE_MANAGER") private readonly cacheManager: Cache) {}
 
   /**
    * Generates a 6-digit verification token and caches it.
@@ -33,7 +31,7 @@ export class VerificationTokenService {
       `verification:${phoneNumber}`,
       payload,
       this.tokenExpiryMinutes * 60
-    ); // Set TTL (in seconds)
+    );
 
     return token;
   }
@@ -52,12 +50,13 @@ export class VerificationTokenService {
       return false; // Token not found or expired
     }
 
-    if (payload.token !== token) {
+    // Compare as strings
+    if (payload.token !== token.toString()) {
       return false; // Token mismatch
     }
 
-    // Check expiry
-    if (payload.expiresAt < new Date()) {
+    // Ensure date comparison is valid
+    if (new Date(payload.expiresAt) < new Date()) {
       return false; // Token expired
     }
 

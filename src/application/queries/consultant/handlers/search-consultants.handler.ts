@@ -1,14 +1,15 @@
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { SearchConsultantsQuery } from "../search-consultants.query";
+import { Inject, Logger } from "@nestjs/common";
+
 import { ConsultantRepository } from "domain/consultant/consultant.repository";
 import { ConsultantSearchService } from "application/services/consultant-search.service";
 import { OpenAIService } from "infrastructure/services/openai.service";
-import { Inject, Logger } from "@nestjs/common";
-import { LocationDto } from "presentation/dtos/auth.dto";
-import { ConsultantWithUserDetails } from "presentation/dtos/consultant.dto";
+import { SearchConsultantsQuery } from "../search-consultants.query";
 
 @QueryHandler(SearchConsultantsQuery)
-export class SearchConsultantsHandler implements IQueryHandler<SearchConsultantsQuery> {
+export class SearchConsultantsHandler
+  implements IQueryHandler<SearchConsultantsQuery>
+{
   private readonly logger = new Logger(SearchConsultantsHandler.name);
 
   constructor(
@@ -23,13 +24,14 @@ export class SearchConsultantsHandler implements IQueryHandler<SearchConsultants
     const cacheKey = `search:${JSON.stringify(query)}`;
 
     try {
-      const cached = await this.consultantSearchService.getCachedResults(cacheKey);
+      const cached =
+        await this.consultantSearchService.getCachedResults(cacheKey);
       if (cached) return cached;
 
       const {
         items: consultants,
         total,
-        totalPages
+        totalPages,
       } = await this.consultantRepository.getConsultantsByPreferences(
         location,
         profession,
@@ -38,20 +40,21 @@ export class SearchConsultantsHandler implements IQueryHandler<SearchConsultants
         "distance"
       );
 
-      const processed = total > 30
-        ? await this.openAIService.rankConsultants(consultants.slice(0, 20), {
-            profession,
-            location,
-            sortBy: "distance"
-          })
-        : consultants;
+      const processed =
+        total > 30
+          ? await this.openAIService.rankConsultants(consultants.slice(0, 20), {
+              profession,
+              location,
+              sortBy: "distance",
+            })
+          : consultants;
 
       const result = {
         items: processed,
         totalItems: total,
         page,
         limit,
-        totalPages
+        totalPages,
       };
 
       await this.consultantSearchService.cacheResults(cacheKey, result);

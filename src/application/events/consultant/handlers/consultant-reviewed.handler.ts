@@ -31,7 +31,7 @@ export class ConsultantReviewedHandler
       if (!consultant) return;
 
       // Generate AI review if enough reviews exist
-      if (consultant.reviews.length >= 3) {
+      if (consultant.reviews.length >= 30) {
         const aiReview = await this.openAIService.generateConsultantReview(
           consultant.reviews
         );
