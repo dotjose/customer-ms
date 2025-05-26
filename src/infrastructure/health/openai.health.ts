@@ -15,7 +15,8 @@ export class OpenAIHealthIndicator extends HealthIndicator {
   ) {
     super();
     this.openAIService.setApiKey(
-      this.configService.get<string>("OPENAI_API_KEY")
+      this.configService.get<string>("OPENAI_API_KEY"),
+      this.configService.get<string>("OPENAI_BASE_URL")
     );
   }
 

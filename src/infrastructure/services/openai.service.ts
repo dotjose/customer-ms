@@ -21,11 +21,11 @@ export class OpenAIService {
     });
   }
 
-  setApiKey(apiKey: string) {
+  setApiKey(apiKey: string, baseURL: string) {
     if (!apiKey) {
       throw new InternalServerErrorException("Invalid OpenAI API key");
     }
-    this.openai = new OpenAI({ apiKey });
+    this.openai = new OpenAI({ apiKey, baseURL });
   }
 
   async testConnection(): Promise<boolean> {
