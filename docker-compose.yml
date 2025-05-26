@@ -1,8 +1,11 @@
 version: "3.8"
 
 services:
-  app:
-    build: .
+  customer-api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: user-api-app
     restart: unless-stopped
     ports:
       - "3002:3002"
@@ -21,6 +24,16 @@ services:
       PORT: 3002
     networks:
       - shared-backend
+    depends_on:
+      - shared-mongodb
+      - shared-redis
+      - shared-elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    entrypoint: ["./wait-for-mongo.sh", "./wait-for-redis.sh", "./wait-for-elastic.sh", "npm", "start"]
 
 networks:
   shared-backend:
