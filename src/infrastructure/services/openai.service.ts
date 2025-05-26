@@ -11,7 +11,9 @@ export class OpenAIService {
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>("OPENAI_API_KEY");
-    if (!apiKey) {
+    const apiURL = this.configService.get<string>("OPENAI_BASE_URL");
+
+    if (!apiKey && !apiURL) {
       throw new InternalServerErrorException("Missing OpenAI API key");
     }
 
