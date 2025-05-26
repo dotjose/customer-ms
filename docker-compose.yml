@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  customer-api:
+  user-api:
     build: 
       context: .
       dockerfile: Dockerfile
