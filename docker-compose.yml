@@ -33,7 +33,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    entrypoint: ["./wait-for-all.sh", "node", "dist/index.js"]
+    entrypoint: ["./wait-for-all.sh", "node", "dist/main.js"]
 
 networks:
   shared-backend:
