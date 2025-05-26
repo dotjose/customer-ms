@@ -33,7 +33,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    entrypoint: ["./wait-for-mongo.sh", "./wait-for-redis.sh", "./wait-for-elastic.sh", "npm", "start"]
+    entrypoint: ["./wait-for-all.sh", "node", "dist/index.js"]
 
 networks:
   shared-backend:
