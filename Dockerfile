@@ -18,8 +18,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 COPY wait-for-all.sh wait-for-mongo.sh wait-for-redis.sh wait-for-elastic.sh /usr/src/app/
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories && \
-    apk add --no-cache curl
+RUN apk add --no-cache curl
 RUN chmod +x /usr/src/app/wait-for-*.sh
 
 ENV NODE_ENV=production
