@@ -14,6 +14,8 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 COPY wait-for-all.sh wait-for-mongo.sh wait-for-redis.sh wait-for-elastic.sh /usr/src/app/
+
+RUN apk update && apk add --no-cache curl
 RUN chmod +x /usr/src/app/wait-for-*.sh
 
 ENV NODE_ENV=production
