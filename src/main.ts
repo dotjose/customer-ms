@@ -1,7 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-import { AppModule } from "./app.module";
 import * as helmet from "helmet";
 import compression from "compression";
 import { ConfigService } from "@nestjs/config";
@@ -10,6 +9,7 @@ import { LoggingInterceptor } from "./infrastructure/monitoring/logging.intercep
 import { PrometheusController } from "./infrastructure/monitoring/prometheus.controller";
 import { TransformInterceptor } from "infrastructure/interceptors/transform.interceptor";
 import { SeederService } from "infrastructure/seeder/seeder.service";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
   try {
@@ -41,8 +41,9 @@ async function bootstrap() {
 
     // Start the application
     const port = configService.get<number>("PORT") || 3000;
-    await app.listen(port);
-    logger.log(`Application is running on: http://localhost:${port}`);
+    const host = configService.get<string>("HOST") || "0.0.0.0";
+    await app.listen(port, host);
+    logger.log(`Application is running on: http://${host}:${port}`);
   } catch (error) {
     console.error("Error during app initialization", error);
     process.exit(1); // Exit process with failure code
