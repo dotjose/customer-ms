@@ -99,6 +99,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
             hourlyRate: 1,
             averageRating: 1,
             totalReviews: 1,
+            resumeUrl: { $ifNull: ["$resumeUrl", ""] },
             isAvailable: 1,
             createdAt: 1,
             updatedAt: 1,
@@ -175,6 +176,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
             isAvailable: 1,
             createdAt: 1,
             updatedAt: 1,
+            resumeUrl: { $ifNull: ["$resumeUrl", ""] },
             user: {
               firstName: { $ifNull: ["$userDetails.firstName", "N/A"] },
               lastName: { $ifNull: ["$userDetails.lastName", "N/A"] },
@@ -254,10 +256,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
       },
       {
         $facet: {
-          metadata: [
-            { $count: "total" },
-            { $addFields: { page, limit } },
-          ],
+          metadata: [{ $count: "total" }, { $addFields: { page, limit } }],
           data: [
             { $skip: skip },
             { $limit: limit },
@@ -267,7 +266,9 @@ export class MongoConsultantRepository implements ConsultantRepository {
                 profession: {
                   id: "$professionDetails._id",
                   name: { $ifNull: ["$professionDetails.name", "Unknown"] },
-                  description: { $ifNull: ["$professionDetails.description", ""] },
+                  description: {
+                    $ifNull: ["$professionDetails.description", ""],
+                  },
                   icon: { $ifNull: ["$professionDetails.icon", ""] },
                 },
                 skills: 1,
@@ -307,15 +308,19 @@ export class MongoConsultantRepository implements ConsultantRepository {
         },
       },
     ];
-  
-    const result = await this.consultantModel.aggregate(aggregationPipeline).exec();
-    
-    return result[0] || {
-      data: [],
-      total: 0,
-      page,
-      totalPages: 0,
-    };
+
+    const result = await this.consultantModel
+      .aggregate(aggregationPipeline)
+      .exec();
+
+    return (
+      result[0] || {
+        data: [],
+        total: 0,
+        page,
+        totalPages: 0,
+      }
+    );
   }
 
   async getConsultantsByPreferences(
@@ -326,66 +331,61 @@ export class MongoConsultantRepository implements ConsultantRepository {
     sortBy?: "rating" | "hourlyRate" | "distance"
   ): Promise<PaginatedResultDTO<ConsultantWithUserDetails>> {
     const skip = (page - 1) * limit;
-  
+
     // 1. Build the base pipeline stages
     const pipeline = this.buildBasePipeline(profession, location);
-  
+
     // 2. Add sorting
     this.addSortingStage(pipeline, sortBy, location);
-  
+
     // 3. Get paginated results and total count in a single round trip
-    const [result] = await this.consultantModel.aggregate([
-      {
-        $facet: {
-          metadata: [
-            ...pipeline,
-            { $count: "total" }
-          ],
-          data: [
-            ...pipeline,
-            { $skip: skip },
-            { $limit: limit }
-          ]
-        }
-      },
-      {
-        $project: {
-          consultants: "$data",
-          total: { $arrayElemAt: ["$metadata.total", 0] },
-          page: { $literal: page },
-          limit: { $literal: limit },
-          totalPages: {
-            $ceil: {
-              $divide: [
-                { $arrayElemAt: ["$metadata.total", 0] },
-                limit
-              ]
-            }
-          }
-        }
-      }
-    ]).exec();
-  
+    const [result] = await this.consultantModel
+      .aggregate([
+        {
+          $facet: {
+            metadata: [...pipeline, { $count: "total" }],
+            data: [...pipeline, { $skip: skip }, { $limit: limit }],
+          },
+        },
+        {
+          $project: {
+            consultants: "$data",
+            total: { $arrayElemAt: ["$metadata.total", 0] },
+            page: { $literal: page },
+            limit: { $literal: limit },
+            totalPages: {
+              $ceil: {
+                $divide: [{ $arrayElemAt: ["$metadata.total", 0] }, limit],
+              },
+            },
+          },
+        },
+      ])
+      .exec();
+
     return {
       items: result?.consultants || [],
       total: result?.total || 0,
       page,
       limit,
-      totalPages: result?.totalPages || 0
+      totalPages: result?.totalPages || 0,
     };
   }
-  
+
   // Helper methods for pipeline construction
-  private buildBasePipeline(profession: string | null, location: LocationDto | null): any[] {
+  private buildBasePipeline(
+    profession: string | null,
+    location: LocationDto | null
+  ): any[] {
     const pipeline: any[] = [];
     const matchStage: any = { isAvailable: true };
-  
+
     if (profession) {
       matchStage.profession = new Types.ObjectId(profession);
     }
-  
+
     pipeline.push({ $match: matchStage });
-  
+
     // Profession details lookup
     pipeline.push(
       {
@@ -393,17 +393,17 @@ export class MongoConsultantRepository implements ConsultantRepository {
           from: "professiondocuments",
           localField: "profession",
           foreignField: "_id",
-          as: "professionDetails"
-        }
+          as: "professionDetails",
+        },
       },
       {
         $unwind: {
           path: "$professionDetails",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       }
     );
-  
+
     // User details lookup
     pipeline.push(
       {
@@ -411,30 +411,30 @@ export class MongoConsultantRepository implements ConsultantRepository {
           from: "users",
           localField: "userId",
           foreignField: "_id",
-          as: "userDetails"
-        }
+          as: "userDetails",
+        },
       },
       {
         $unwind: {
           path: "$userDetails",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       }
     );
-  
+
     // Location filtering
     if (location?.coordinates) {
       pipeline.push({
         $match: {
           "userDetails.location.coordinates": {
             $geoWithin: {
-              $centerSphere: [location.coordinates, 0.02354] // ~1.5 mile radius
-            }
-          }
-        }
+              $centerSphere: [location.coordinates, 0.02354], // ~1.5 mile radius
+            },
+          },
+        },
       });
     }
-  
+
     // Projection
     pipeline.push({
       $project: {
@@ -443,7 +443,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
           id: "$professionDetails._id",
           name: { $ifNull: ["$professionDetails.name", "Unknown"] },
           description: { $ifNull: ["$professionDetails.description", ""] },
-          icon: { $ifNull: ["$professionDetails.icon", ""] }
+          icon: { $ifNull: ["$professionDetails.icon", ""] },
         },
         skills: 1,
         hourlyRate: 1,
@@ -462,21 +462,25 @@ export class MongoConsultantRepository implements ConsultantRepository {
           location: { $ifNull: ["$userDetails.location", "N/A"] },
           avatar: { $ifNull: ["$userDetails.avatar", ""] },
           bio: { $ifNull: ["$userDetails.bio", ""] },
-          socialLinks: { $ifNull: ["$userDetails.socialLinks", []] }
+          socialLinks: { $ifNull: ["$userDetails.socialLinks", []] },
         },
-        reviews: 1
-      }
+        reviews: 1,
+      },
     });
-  
+
     return pipeline;
   }
-  
-  private addSortingStage(pipeline: any[], sortBy?: string, location?: LocationDto | null): void {
+
+  private addSortingStage(
+    pipeline: any[],
+    sortBy?: string,
+    location?: LocationDto | null
+  ): void {
     const sortStage: any = { $sort: {} };
-  
+
     // Default sorting
     sortStage.$sort.createdAt = -1;
-  
+
     // Apply additional sorting criteria
     if (sortBy === "rating") {
       sortStage.$sort.averageRating = -1;
@@ -485,7 +489,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
     } else if (sortBy === "distance" && location?.coordinates) {
       sortStage.$sort.distance = 1;
     }
-  
+
     pipeline.push(sortStage);
   }
 
