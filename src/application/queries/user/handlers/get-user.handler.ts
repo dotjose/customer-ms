@@ -48,6 +48,7 @@ export class GetUserHandler implements IQueryHandler<GetUserQuery> {
         location: user.location,
         social: user.socials,
         bio: user.bio,
+        avatar: user.avatar,
         consultantDetails: consultant,
       };
     } catch (error) {
