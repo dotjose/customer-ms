@@ -1,5 +1,5 @@
 export interface PaginatedResponse<T> {
-  items: T[];
+  reviews: T[];
   total: number;
   page: number;
   limit: number;
@@ -8,13 +8,13 @@ export interface PaginatedResponse<T> {
 
 export class PaginationUtils {
   static createPaginatedResponse<T>(
-    items: T[],
+    reviews: T[],
     page: number,
     limit: number,
-    total: number,
+    total: number
   ): PaginatedResponse<T> {
     return {
-      items,
+      reviews,
       total,
       page,
       limit,
