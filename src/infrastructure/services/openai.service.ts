@@ -43,38 +43,126 @@ export class OpenAIService {
   }
 
   async generateConsultantReview(reviews: Review[]) {
+    const cleanReviews = this.filterReviews(reviews);
+    if (cleanReviews.length < 3) {
+      throw new Error("Not enough quality reviews to generate AI feedback.");
+    }
+
     const prompt = this.buildReviewPrompt(reviews);
 
+    // Your Groq API call
     const response = await this.openai.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 500,
+      // --- MODEL UPGRADE ---
+      // Upgraded to the more powerful 70B parameter model for higher quality analysis.
+      model: "llama-3.3-70b-versatile",
+      // ---------------------
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert review analyst on a professional freelancer platform. Your goal is to generate a structured, high-quality AI summary to help freelancers understand their feedback and improve.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0,
+      max_tokens: 800,
     });
 
-    return this.parseAIResponse(response.choices[0].message.content);
+    const rawResponse = response.choices[0].message.content;
+    return this.parseAIResponse(rawResponse);
+  }
+
+  private filterReviews(reviews: Review[]): Review[] {
+    const blockedWords = ["fuck", "shit", "idiot", "scam", "dumb"];
+    const profanityRegex = new RegExp(blockedWords.join("|"), "i");
+
+    return reviews.filter((r) => {
+      if (!r.review || !r.rating) return false;
+      const text = r.review.toLowerCase().trim();
+      return text.length >= 10 && !profanityRegex.test(text);
+    });
   }
 
   private buildReviewPrompt(reviews: Review[]): string {
     const reviewTexts = reviews
-      .map((r) => `Rating: ${r.rating}/5\nReview: ${r.review}`)
-      .join("\n\n");
+      .map(
+        (r) =>
+          `User: ${r.userName}\nRating: ${
+            r.rating
+          }/5\nComment: ${r.review.trim()}`
+      )
+      .join("\n\n---\n\n");
 
-    return `Analyze the following consultant reviews and provide a comprehensive summary:
+    return `
+Analyze the following freelancer reviews thoroughly and provide a detailed, professional analysis.
 
+### INSTRUCTIONS:
+1. **Summary**: Write a concise 2-3 sentence summary capturing the overall sentiment and key themes.
+2. **Strengths**: 
+   - Extract 3-5 specific strengths mentioned across reviews
+   - Be specific (e.g., "Excellent frontend development skills" instead of "Great work")
+   - Include frequency if multiple clients mention the same strength
+3. **Weaknesses**:
+   - Identify 2-3 concrete areas for improvement mentioned in reviews
+   - If no clear weaknesses exist, analyze patterns in lower-rated reviews for potential issues
+   - Never make up weaknesses - use only what's evident from the comments
+4. **Recommendations**:
+   - Provide 2-3 actionable, specific suggestions tied directly to identified weaknesses
+   - Include both short-term fixes and long-term improvement strategies
+5. **Rating**: Calculate the precise average rating from all reviews (to 1 decimal place)
+
+### ANALYSIS GUIDELINES:
+- Focus on concrete skills and behaviors mentioned
+- Differentiate between one-off comments and recurring patterns
+- For negative comments without details, suggest generic improvement areas but mark them as [UNSPECIFIED]
+- Maintain professional tone while being direct
+
+### REVIEWS:
 ${reviewTexts}
 
-Please provide:
-1. An overall rating (1-5)
-2. A summary of strengths
-3. A summary of weaknesses
-4. Specific recommendations for improvement
-Format as JSON.`;
+### REQUIRED JSON OUTPUT FORMAT:
+{
+  "rating": number,
+  "summary": "string",
+  "strengths": ["string (specific skill/attribute)", ...],
+  "weaknesses": ["string (specific area needing improvement)", ...],
+  "recommendations": ["string (actionable suggestion)", ...]
+}
+
+Output only valid JSON with no additional commentary or formatting.
+`;
   }
 
   private parseAIResponse(response: string) {
     try {
-      const parsed = JSON.parse(response);
+      const cleaned = response
+        .trim()
+        .replace(/^```json\s*/, "")
+        .replace(/```$/, "");
+      const parsed = JSON.parse(cleaned);
+
+      if (
+        typeof parsed.rating !== "number" ||
+        typeof parsed.summary !== "string" ||
+        !Array.isArray(parsed.strengths) ||
+        !parsed.strengths.every((s: any) => typeof s === "string") ||
+        !Array.isArray(parsed.weaknesses) ||
+        !parsed.weaknesses.every((w: any) => typeof w === "string") ||
+        !Array.isArray(parsed.recommendations) ||
+        !parsed.recommendations.every((r: any) => typeof r === "string")
+      ) {
+        console.error(
+          "AI response JSON schema mismatch. Parsed object:",
+          parsed
+        );
+        throw new Error(
+          "AI response JSON schema mismatch with the expected flat structure."
+        );
+      }
+
       return {
         rating: parsed.rating,
         summary: parsed.summary,
@@ -83,8 +171,9 @@ Format as JSON.`;
         recommendations: parsed.recommendations,
         lastUpdated: new Date(),
       };
-    } catch (error) {
-      throw new Error("Failed to parse AI response");
+    } catch (err) {
+      console.error("❌ Failed to parse AI response:", response);
+      throw new Error(`Failed to parse AI response: ${err.message}`);
     }
   }
 

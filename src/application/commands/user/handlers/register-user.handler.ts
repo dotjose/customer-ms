@@ -63,7 +63,12 @@ export class RegisterUserHandler
 
     try {
       this.eventBus.publish(
-        new UserRegisteredEvent("User Registered", user.email, user.phoneNumber)
+        new UserRegisteredEvent(
+          user.firstName,
+          user.email,
+          user.phoneNumber,
+          user.id
+        )
       );
       this.logger.log("UserRegisteredEvent published", {
         userId: user.id,

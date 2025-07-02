@@ -87,7 +87,7 @@ export class AuthController {
   @ApiOperation({ summary: "Verify account" })
   @ApiResponse({ status: 200, description: "Account verified successfully" })
   async verifyAccount(@Body() dto: VerifyCodeDto) {
-    const command = new VerifyCodeCommand(dto.userId, dto.code, dto.type);
+    const command = new VerifyCodeCommand(dto.userId, dto.code);
     return this.commandBus.execute(command);
   }
 

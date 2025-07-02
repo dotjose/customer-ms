@@ -35,6 +35,8 @@ export class ResendVerificationHandler
     const verificationCode =
       await this.verificationTokenService.generateToken(userId);
 
+    console.log(verificationCode);
+
     // Publish verification code generated event
     this.eventBus.publish(
       new VerificationCodeGeneratedEvent(

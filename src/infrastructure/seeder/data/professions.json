@@ -1,262 +1,46 @@
 {
   "professions": [
     {
-      "name": "Swimming Pool",
-      "description": "Private or community swimming pool maintenance and repair services",
-      "type": "OUTDOOR",
-      "icon": "pool"
-    },
-    {
-      "name": "Fitness Center",
-      "description": "Fully equipped gym facility with personal training options",
-      "type": "INDOOR",
-      "icon": "gym"
-    },
-    {
-      "name": "24/7 Security",
-      "description": "Round-the-clock security and surveillance services",
-      "type": "SECURITY",
-      "icon": "shield"
-    },
-    {
-      "name": "Parking Garage",
-      "description": "Covered and secure parking facility",
-      "type": "INDOOR",
-      "icon": "car"
-    },
-    {
-      "name": "Garden",
-      "description": "Landscaped outdoor space maintenance and design",
-      "type": "OUTDOOR",
-      "icon": "tree"
-    },
-    {
-      "name": "Smart Home System",
-      "description": "Integrated home automation and smart device installation",
-      "type": "INDOOR",
-      "icon": "smart-home"
-    },
-    {
-      "name": "Community Center",
-      "description": "Shared space for resident activities and events",
-      "type": "COMMUNITY",
-      "icon": "people"
-    },
-    {
-      "name": "Cleaning",
-      "description": "Professional residential and commercial cleaning services",
-      "type": "SERVICE",
-      "icon": "broom"
-    },
-    {
-      "name": "Plumbing",
-      "description": "Plumbing repair, installation, and maintenance",
-      "type": "SERVICE",
-      "icon": "pipe"
-    },
-    {
-      "name": "Electrical",
-      "description": "Electrical system installation, repair, and maintenance",
-      "type": "SERVICE",
-      "icon": "lightning"
-    },
-    {
-      "name": "Wood Work",
-      "description": "Custom carpentry and woodworking services",
-      "type": "SERVICE",
-      "icon": "hammer"
-    },
-    {
-      "name": "Maid",
-      "description": "Housekeeping and maid services for homes and offices",
-      "type": "SERVICE",
-      "icon": "broom"
-    },
-    {
-      "name": "Home Builders",
-      "description": "Custom home construction and renovation services",
-      "type": "CONSTRUCTION",
-      "icon": "house"
-    },
-    {
-      "name": "Gardner",
-      "description": "Landscaping, garden design, and maintenance services",
-      "type": "OUTDOOR",
-      "icon": "tree"
-    },
-    {
-      "name": "Driver",
-      "description": "Personal, commercial, and ride-sharing driving services",
-      "type": "SERVICE",
-      "icon": "car"
-    },
-    {
-      "name": "Appliance",
-      "description": "Appliance repair, installation, and maintenance",
-      "type": "SERVICE",
-      "icon": "tools"
-    },
-    {
-      "name": "HVAC & Cooling",
-      "description": "Heating, ventilation, and air conditioning services",
-      "type": "SERVICE",
-      "icon": "snowflake"
-    },
-    {
-      "name": "Roofing",
-      "description": "Roof repair, installation, and maintenance",
-      "type": "CONSTRUCTION",
-      "icon": "roof"
-    },
-    {
-      "name": "Pest & Animal Control",
-      "description": "Pest extermination and wildlife control services",
-      "type": "SERVICE",
-      "icon": "bug"
-    },
-    {
-      "name": "Landscaping & Yard",
-      "description": "Yard maintenance, landscaping, and design services",
-      "type": "OUTDOOR",
-      "icon": "tree"
-    },
-    {
-      "name": "Construction & Remodeling",
-      "description": "Home construction, remodeling, and renovation services",
-      "type": "CONSTRUCTION",
-      "icon": "hammer"
-    },
-    {
-      "name": "Flooring & Carpentry",
-      "description": "Flooring installation and custom carpentry services",
-      "type": "CONSTRUCTION",
-      "icon": "floor"
-    },
-    {
-      "name": "Painting & Finishing",
-      "description": "Interior and exterior painting and finishing services",
-      "type": "CONSTRUCTION",
-      "icon": "paint"
-    },
-    {
-      "name": "Automotive",
-      "description": "Automotive repair, maintenance, and detailing services",
-      "type": "SERVICE",
-      "icon": "car"
-    },
-    {
-      "name": "Lawyer",
-      "description": "Legal consultation and representation services",
-      "type": "SERVICE",
-      "icon": "scale"
-    },
-    {
-      "name": "Accountant",
-      "description": "Financial accounting, tax preparation, and bookkeeping services",
+      "name": "Financial Services",
+      "description": "Accounting, tax services, financial planning, investment and insurance advice",
       "type": "SERVICE",
       "icon": "calculator"
     },
     {
-      "name": "Consultant",
-      "description": "Professional consulting services for business and personal needs",
+      "name": "Legal Services",
+      "description": "Family law, estate planning, contracts, and legal consultations",
       "type": "SERVICE",
-      "icon": "briefcase"
+      "icon": "scale"
     },
     {
-      "name": "Advisor",
-      "description": "Expert advice and guidance in specialized fields",
-      "type": "SERVICE",
-      "icon": "chart"
-    },
-    {
-      "name": "IT Support",
-      "description": "Technical support and IT services for homes and businesses",
-      "type": "SERVICE",
-      "icon": "computer"
-    },
-    {
-      "name": "Event Planning",
-      "description": "Professional event planning and coordination services",
-      "type": "SERVICE",
-      "icon": "calendar"
-    },
-    {
-      "name": "Photography",
-      "description": "Professional photography services for events and portraits",
-      "type": "SERVICE",
-      "icon": "camera"
-    },
-    {
-      "name": "Catering",
-      "description": "Food catering services for events and gatherings",
-      "type": "SERVICE",
-      "icon": "utensils"
-    },
-    {
-      "name": "Health & Wellness",
-      "description": "Health, wellness, and therapeutic services",
-      "type": "SERVICE",
-      "icon": "heart"
-    },
-    {
-      "name": "Education & Tutoring",
-      "description": "Educational and tutoring services for all ages",
-      "type": "SERVICE",
-      "icon": "book"
-    },
-    {
-      "name": "Pet Care",
-      "description": "Pet grooming, walking, and care services",
-      "type": "SERVICE",
-      "icon": "paw"
-    },
-    {
-      "name": "Moving & Storage",
-      "description": "Moving, packing, and storage services",
-      "type": "SERVICE",
-      "icon": "truck"
-    },
-    {
-      "name": "Financial Advisor",
-      "description": "Financial planning and investment advisory services",
-      "type": "SERVICE",
-      "icon": "chart"
-    },
-    {
-      "name": "Real Estate Agent",
-      "description": "Real estate buying, selling, and rental services",
+      "name": "Home Services",
+      "description": "Cleaning, plumbing, electrical, HVAC, lawn care, landscaping, pest control, home security",
       "type": "SERVICE",
       "icon": "home"
     },
     {
-      "name": "Interior Design",
-      "description": "Professional interior design and decoration services",
+      "name": "Healthcare Services",
+      "description": "Doctors, nurses, therapists, and home care services",
       "type": "SERVICE",
-      "icon": "paint-roller"
+      "icon": "heart"
     },
     {
-      "name": "Wedding Planner",
-      "description": "Comprehensive wedding planning and coordination services",
+      "name": "Personal Services",
+      "description": "Beauty salons, massages, babysitters, daycare, event planning and coordination",
       "type": "SERVICE",
-      "icon": "rings"
+      "icon": "user"
     },
     {
-      "name": "Travel Agent",
-      "description": "Travel planning and booking services",
+      "name": "Educational Services",
+      "description": "Private tutors, coaches, and mentors",
       "type": "SERVICE",
-      "icon": "plane"
+      "icon": "book"
     },
     {
-      "name": "Handyman",
-      "description": "General repair and maintenance services",
+      "name": "Other Services",
+      "description": "Computer repair, photography, writing, design, and other miscellaneous services",
       "type": "SERVICE",
       "icon": "tools"
-    },
-    {
-      "name": "Other",
-      "description": "Miscellaneous services not listed above",
-      "type": "SERVICE",
-      "icon": "dots"
     }
   ]
 }

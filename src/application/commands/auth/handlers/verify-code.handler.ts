@@ -17,8 +17,8 @@ export class VerifyCodeHandler implements ICommandHandler<VerifyCodeCommand> {
   ) {}
 
   async execute(command: VerifyCodeCommand): Promise<{ message: string }> {
-    const { userId, phone, code } = command;
-
+    const { userId, code } = command;
+    console.log(command);
     this.logger.log(`Verifying code for userId: ${userId}`);
 
     // Fetch user by ID
@@ -30,7 +30,7 @@ export class VerifyCodeHandler implements ICommandHandler<VerifyCodeCommand> {
 
     // Verify the provided code
     const isCodeValid = await this.verificationTokenService.verifyToken(
-      phone,
+      userId,
       code
     );
     if (!isCodeValid) {

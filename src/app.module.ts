@@ -192,7 +192,12 @@ const services = [
     }),
 
     //Cache Manager
-    CacheModule.register({ ttl: 5, max: 100 }),
+    CacheModule.register({
+      isGlobal: true,
+      store: "memory",
+      ttl: 300, // default
+      max: 100,
+    }),
 
     CqrsModule,
     TerminusModule,

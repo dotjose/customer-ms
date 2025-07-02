@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { CommandHandler, EventBus, ICommandHandler } from "@nestjs/cqrs";
 import { AddConsultantReviewCommand } from "../create-review.command";
 import { ConsultantRepository } from "domain/consultant/consultant.repository";
 import { ObjectId } from "mongodb";
@@ -9,6 +9,7 @@ import {
   Inject,
 } from "@nestjs/common";
 import { Consultant } from "domain/consultant/consultant.entity";
+import { ConsultantReviewedEvent } from "domain/events/consultant/consultant-reviewed.event";
 
 @CommandHandler(AddConsultantReviewCommand)
 export class AddConsultantReviewHandler
@@ -18,7 +19,8 @@ export class AddConsultantReviewHandler
 
   constructor(
     @Inject("ConsultantRepository")
-    private readonly consultantRepository: ConsultantRepository
+    private readonly consultantRepository: ConsultantRepository,
+    private readonly eventBus: EventBus
   ) {}
 
   async execute(command: AddConsultantReviewCommand): Promise<void> {
@@ -49,6 +51,10 @@ export class AddConsultantReviewHandler
       await this.consultantRepository.save(consultant);
       this.logger.log(
         `Successfully saved updated Consultant ID: ${consultantId}`
+      );
+
+      this.eventBus.publish(
+        new ConsultantReviewedEvent(consultant.id.toString(), newReview)
       );
     } catch (error) {
       this.logger.error(

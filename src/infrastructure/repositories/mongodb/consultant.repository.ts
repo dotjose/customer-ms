@@ -75,7 +75,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
         // --- LIMIT to 20 ---
         {
           $addFields: {
-            "doc.reviews": { $slice: ["$sortedReviews", 20] },
+            "doc.reviews": { $slice: ["$sortedReviews", 6] },
           },
         },
         {
@@ -103,6 +103,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
             isAvailable: 1,
             createdAt: 1,
             updatedAt: 1,
+            aiReview: 1,
             user: {
               firstName: { $ifNull: ["$userDetails.firstName", "N/A"] },
               lastName: { $ifNull: ["$userDetails.lastName", "N/A"] },

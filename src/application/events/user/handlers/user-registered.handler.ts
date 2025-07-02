@@ -22,9 +22,8 @@ export class UserRegisteredHandler
     try {
       // Generate a 6-digit token
       const token = await this.verificationTokenService.generateToken(
-        event.phone
+        event.userId
       );
-
       // Get email and SMS templates
       // const emailTemplate = this.notificationTemplateService.getEmailTemplate(
       //   event.name,

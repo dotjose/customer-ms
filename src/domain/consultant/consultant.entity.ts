@@ -1,6 +1,4 @@
 import { AggregateRoot } from "@nestjs/cqrs";
-import { ConsultantAIReviewUpdatedEvent } from "domain/events/consultant/consultant-ai-reviewed.event";
-import { ConsultantReviewedEvent } from "domain/events/consultant/consultant-reviewed.event";
 import { ObjectId } from "mongodb";
 
 interface Education {
@@ -112,15 +110,11 @@ export class Consultant extends AggregateRoot {
     this.props.reviews.push(review);
     this.updateAverageRating();
     this.props.updatedAt = new Date();
-    this.apply(new ConsultantReviewedEvent(this.id.toString(), review));
   }
 
   public updateAIReview(aiReview: AIReview): void {
     this.props.aiReview = aiReview;
     this.props.updatedAt = new Date();
-    this.apply(
-      new ConsultantAIReviewUpdatedEvent(this.id.toString(), aiReview)
-    );
   }
 
   private updateAverageRating(): void {
@@ -128,7 +122,8 @@ export class Consultant extends AggregateRoot {
       (sum, review) => sum + review.rating,
       0
     );
-    this.props.averageRating = totalRating / this.props.reviews.length;
+    const avg = totalRating / this.props.reviews.length;
+    this.props.averageRating = Math.round(avg * 100) / 100;
     this.props.totalReviews = this.props.reviews.length;
   }
 
