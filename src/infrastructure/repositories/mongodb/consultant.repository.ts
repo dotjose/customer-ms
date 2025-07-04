@@ -93,6 +93,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
               description: { $ifNull: ["$professionDetails.description", ""] },
               icon: { $ifNull: ["$professionDetails.icon", ""] },
             },
+            userId: 1,
             skills: { $ifNull: ["$skills", []] },
             education: { $ifNull: ["$education", []] },
             experiences: { $ifNull: ["$experiences", []] },

@@ -97,11 +97,11 @@ export class CreateConsultantProfileDto {
   id?: string;
 
   @ApiProperty()
-  @IsMongoId()
+  @IsString()
   userId: string;
 
   @ApiProperty()
-  @IsMongoId()
+  @IsString()
   profession: string;
 
   @ApiProperty()
@@ -125,7 +125,7 @@ export class CreateConsultantProfileDto {
   hourlyRate: number;
 
   @ApiProperty()
-  @IsUrl()
+  @IsString()
   @IsOptional()
   resumeUrl?: string;
 
