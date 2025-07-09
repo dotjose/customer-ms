@@ -105,29 +105,17 @@ export class CreateConsultantProfileDto {
   profession: string;
 
   @ApiProperty()
-  @IsArray()
-  @IsString({ each: true })
-  skills: string[];
-
-  @ApiProperty({ type: [EducationDto], required: false })
-  @ValidateNested({ each: true })
-  @Type(() => EducationDto)
-  education: EducationDto[] = [];
-
-  @ApiProperty({ type: [ExperienceDto], required: false })
-  @ValidateNested({ each: true })
-  @Type(() => ExperienceDto)
-  experiences: ExperienceDto[] = [];
-
-  @ApiProperty()
-  @IsNumber()
-  @Min(0)
-  hourlyRate: number;
+  @IsString()
+  business: string;
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
-  resumeUrl?: string;
+  about: string;
+
+  @ApiProperty()
+  @IsArray()
+  @IsString({ each: true })
+  skills: string[];
 
   @ApiProperty()
   @IsBoolean()

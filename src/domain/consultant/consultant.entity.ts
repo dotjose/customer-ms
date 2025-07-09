@@ -1,22 +1,6 @@
 import { AggregateRoot } from "@nestjs/cqrs";
 import { ObjectId } from "mongodb";
 
-interface Education {
-  institution: string;
-  degree: string;
-  field: string;
-  startDate: Date;
-  endDate?: Date;
-}
-
-interface Experience {
-  company: string;
-  position: string;
-  description: string;
-  startDate: Date;
-  endDate?: Date;
-}
-
 export interface Review {
   userId: ObjectId;
   userName: string;
@@ -37,12 +21,9 @@ interface AIReview {
 export interface ConsultantProps {
   userId: ObjectId;
   profession: ObjectId;
-  skills: string[];
-  education: Education[];
-  experiences: Experience[];
-  hourlyRate: number;
-  resumeUrl?: string;
-  avatarUrl?: string;
+  business: string;
+  about: string;
+  skills?: string[];
   reviews: Review[];
   aiReview?: AIReview;
   averageRating: number;
@@ -78,18 +59,6 @@ export class Consultant extends AggregateRoot {
     return this.props.skills;
   }
 
-  get experiences(): Experience[] {
-    return this.props.experiences;
-  }
-
-  get education(): Education[] {
-    return this.props.education;
-  }
-
-  get hourlyRate(): number {
-    return this.props.hourlyRate;
-  }
-
   get reviews(): Review[] {
     return this.props.reviews;
   }
@@ -102,8 +71,12 @@ export class Consultant extends AggregateRoot {
     return this.props.averageRating;
   }
 
-  get resumeUrl(): string {
-    return this.props.resumeUrl;
+  get about(): string {
+    return this.props.about;
+  }
+
+  get business(): string {
+    return this.props.business;
   }
 
   public addReview(review: Review): void {

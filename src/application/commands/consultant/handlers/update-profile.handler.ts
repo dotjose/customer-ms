@@ -1,12 +1,12 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { Inject, Logger } from "@nestjs/common";
 
-import { UpdateConsultantProfileCommand } from "../update-profile.command";
 import { ConsultantRepository } from "domain/consultant/consultant.repository";
 import { Consultant } from "domain/consultant/consultant.entity";
 import { ObjectId } from "mongodb";
 import { ConsultantProfileUpdatedEvent } from "application/events/consultant/consultant-profile-updated.event";
 import { ConsultantProfileCreatedEvent } from "domain/events/consultant/consultant-profile-created.event";
+import { UpdateConsultantProfileCommand } from "../update-profile.command";
 
 @CommandHandler(UpdateConsultantProfileCommand)
 export class CreateOrUpdateConsultantHandler
@@ -38,12 +38,11 @@ export class CreateOrUpdateConsultantHandler
         existingConsultant.apply(
           new ConsultantProfileUpdatedEvent(existingConsultant.id, {
             userId: existingConsultant.userId.toString(),
-            education: profile.education,
-            experiences: profile.experiences,
             isAvailable: profile.isAvailable,
             profession: profile.profession,
             skills: profile.skills,
-            hourlyRate: profile.hourlyRate,
+            business: profile.business,
+            about: profile.about,
           })
         );
         consultant = existingConsultant;
@@ -67,12 +66,11 @@ export class CreateOrUpdateConsultantHandler
             newConsultant.id,
             new ObjectId(newConsultant.userId),
             JSON.stringify({
-              education: profile.education,
-              experiences: profile.experiences,
               isAvailable: profile.isAvailable,
               profession: profile.profession,
               skills: profile.skills,
-              hourlyRate: profile.hourlyRate,
+              business: profile.business,
+              about: profile.about,
             })
           )
         );

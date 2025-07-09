@@ -201,8 +201,6 @@ Output only valid JSON with no additional commentary or formatting.
         distance: c.user.location,
         averageRating: c.consultant.averageRating,
         skills: c.consultant.skills,
-        hourlyRate: c.consultant.hourlyRate,
-        experience: c.consultant.skills,
       }))
     )}
 

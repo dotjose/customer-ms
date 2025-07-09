@@ -2,42 +2,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema, Types } from "mongoose";
 
 @Schema({ _id: false })
-class Education {
-  @Prop({ required: true })
-  institution: string;
-
-  @Prop({ required: true })
-  degree: string;
-
-  @Prop({ required: true })
-  field: string;
-
-  @Prop({ required: true })
-  startDate: Date;
-
-  @Prop()
-  endDate?: Date;
-}
-
-@Schema({ _id: false })
-class Experience {
-  @Prop({ required: true })
-  company: string;
-
-  @Prop({ required: true })
-  position: string;
-
-  @Prop({ required: true })
-  description: string;
-
-  @Prop({ required: true })
-  startDate: Date;
-
-  @Prop()
-  endDate?: Date;
-}
-
-@Schema({ _id: false })
 class Review {
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   userId: MongooseSchema.Types.ObjectId;
@@ -87,20 +51,14 @@ export class ConsultantDocument extends Document {
   @Prop({ type: Types.ObjectId, ref: "ProfessionDocument", required: true })
   profession: Types.ObjectId;
 
-  @Prop({ type: [String], required: true })
-  skills: string[];
-
-  @Prop({ type: [Education], required: true })
-  education: Education[];
-
-  @Prop({ type: [Experience], required: true })
-  experiences: Experience[];
+  @Prop({ required: true })
+  business: string;
 
   @Prop({ required: true })
-  hourlyRate: number;
+  about: string;
 
-  @Prop()
-  resumeUrl?: string;
+  @Prop({ type: [String], required: true })
+  skills: string[];
 
   @Prop({ type: [Review], default: [] })
   reviews: Review[];
