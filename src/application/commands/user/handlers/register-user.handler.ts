@@ -55,13 +55,13 @@ export class RegisterUserHandler
       updatedAt: new Date(),
     });
 
-    const res = await this.userRepository.save(user);
-    this.logger.log("User successfully registered", {
-      userId: user.id,
-      timestamp: new Date().toISOString(),
-    });
-
     try {
+      const res = await this.userRepository.save(user);
+      this.logger.log("User successfully registered", {
+        userId: user.id,
+        timestamp: new Date().toISOString(),
+      });
+
       this.eventBus.publish(
         new UserRegisteredEvent(
           user.firstName,
@@ -74,14 +74,18 @@ export class RegisterUserHandler
         userId: user.id,
         timestamp: new Date().toISOString(),
       });
-    } catch (error) {
-      this.logger.error("Failed to publish UserRegisteredEvent", {
-        userId: user.id,
-        error,
-      });
+
+      return res;
+    } catch (error: any) {
+      // MongoDB duplicate key error code
+      if (error.code === 11000) {
+        this.logger.error("Duplicate key error on save", { error });
+        throw new ConflictException("Email or phone number already exists");
+      }
+
+      // For any other error, rethrow
+      this.logger.error("Error saving user", { error });
       throw error;
     }
-
-    return res;
   }
 }
