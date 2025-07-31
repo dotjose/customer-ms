@@ -20,6 +20,8 @@ import { UpdateConsultantProfileCommand } from "application/commands/consultant/
 import { SearchConsultantsQuery } from "application/queries/consultant/search-consultants.query";
 import { GetConsultantDetailQuery } from "application/queries/consultant/get-consultant-detail.query";
 import { GetProfessionsQuery } from "application/queries/consultant/get-professions.query";
+import { ContactUsDto } from "presentation/dtos/contact.dto";
+import { ContactUsCommand } from "application/commands/user/contact-us.command";
 
 @ApiTags("Consultants")
 @Controller("consultants")
@@ -59,7 +61,7 @@ export class ConsultantController {
         "Coordinates must be [longitude, latitude]"
       );
     }
-    
+
     const query = new SearchConsultantsQuery(searchParams);
     return this.queryBus.execute(query);
   }
@@ -91,5 +93,18 @@ export class ConsultantController {
   async getProfessions() {
     const professions = await this.queryBus.execute(new GetProfessionsQuery());
     return professions;
+  }
+
+  @Post("/contact")
+  @ApiOperation({ summary: "Send email" })
+  @ApiResponse({
+    status: 201,
+    description: "Your message has been sent",
+  })
+  async sendMessage(@Body() dto: ContactUsDto, @Param("id") id: string) {
+    const { name, email, subject, message } = dto;
+    return await this.commandBus.execute(
+      new ContactUsCommand(name, email, subject, message)
+    );
   }
 }

@@ -44,12 +44,81 @@ export class NotificationTemplateService {
         </div>
         <p class="email-body">
           Thanks for joining us!<br/>
-          MeetingPlace Team
+          Habesha Circle Team
         </p>
       </body>
       </html>
     `;
   }
+
+  contactUsEmailTemplate = ({
+    name,
+    email,
+    subject,
+    message,
+  }: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      color: #333;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .title {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .section {
+      margin-bottom: 16px;
+    }
+    .label {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .value {
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">📬 New Contact Us Submission</div>
+    <div class="section">
+      <div class="label">Name:</div>
+      <div class="value">${name}</div>
+    </div>
+    <div class="section">
+      <div class="label">Email:</div>
+      <div class="value"><a href="mailto:${email}">${email}</a></div>
+    </div>
+    <div class="section">
+      <div class="label">Subject:</div>
+      <div class="value">${subject}</div>
+    </div>
+    <div class="section">
+      <div class="label">Message:</div>
+      <div class="value" style="white-space: pre-line">${message}</div>
+    </div>
+  </div>
+</body>
+</html>
+`;
 
   getSMSTemplate(token: string): string {
     return `Your verification code is ${token}. It will expire in 5 minutes. Welcome to Our Platform!`;
