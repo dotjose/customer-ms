@@ -22,9 +22,11 @@ export class PasswordResetRequestedHandler
       //   event.name,
       //   event.resetToken
       // );
-      // const smsTemplate = this.notificationTemplateService.getSMSTemplate(
-      //   event.resetToken
-      // );
+
+      const smsTemplate = this.notificationTemplateService.getSMSTemplate(
+        event.resetToken
+      );
+
       // // Send email
       // await this.awsConfigService.sendEmail({
       //   Destination: { ToAddresses: [event.email] },
@@ -35,12 +37,13 @@ export class PasswordResetRequestedHandler
       //   Source: process.env.AWS_SES_FROM_EMAIL,
       // });
       // this.logger.log(`Email sent to ${event.email}`);
-      // // Send SMS
-      // await this.awsConfigService.sendSMS({
-      //   PhoneNumber: event.phone,
-      //   Message: smsTemplate,
-      // });
-      // this.logger.log(`SMS sent to ${event.phone}`);
+
+      //Send SMS
+      await this.awsConfigService.sendSMS({
+        PhoneNumber: event.phone,
+        Message: smsTemplate,
+      });
+      this.logger.log(`SMS sent to ${event.phone}`);
     } catch (error) {
       this.logger.error(
         `Error handling UserRegisteredEvent: ${error.message}`,

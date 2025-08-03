@@ -63,6 +63,12 @@ export class UserDocument extends Document {
 
   @Prop()
   socialLinks?: SocialLink[];
+
+  @Prop()
+  passwordResetToken?: string;
+
+  @Prop()
+  passwordResetExpires?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDocument);

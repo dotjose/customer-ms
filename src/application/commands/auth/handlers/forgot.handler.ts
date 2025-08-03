@@ -1,9 +1,10 @@
 import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
 import { Inject, Logger, NotFoundException } from "@nestjs/common";
-import { ForgotPasswordCommand } from "../forgot.command";
+
 import { UserRepository } from "domain/user/user.repository";
 import { VerificationTokenService } from "infrastructure/services/verification-token.service";
 import { PasswordResetRequestedEvent } from "application/events/user/password-reset-requested.event";
+import { ForgotPasswordCommand } from "../forgot.command";
 
 @CommandHandler(ForgotPasswordCommand)
 export class ForgotPasswordHandler
@@ -42,6 +43,7 @@ export class ForgotPasswordHandler
       });
 
       user.setResetToken(resetToken);
+      await this.userRepository.save(user);
 
       this.eventBus.publish(
         new PasswordResetRequestedEvent(

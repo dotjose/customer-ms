@@ -23,7 +23,7 @@ export interface UserProps {
   isVerified: boolean;
   phoneNumber: string;
   passwordResetToken?: string;
-  passwordResetExpires?: number;
+  passwordResetExpires?: Date;
   avatar?: string;
   location?: {
     type?: "Point";
@@ -123,7 +123,9 @@ export class User extends AggregateRoot {
 
   public setResetToken(tokenCode: string): void {
     this.props.passwordResetToken = tokenCode;
-    this.props.passwordResetExpires = new Date().getHours() + 1;
+    this.props.passwordResetExpires = new Date(
+      new Date().getTime() + 1 * 60 * 60 * 1000
+    );
   }
 
   public updateLocation(
@@ -142,8 +144,8 @@ export class User extends AggregateRoot {
 
   public updatePassword(newPassword: string) {
     this.props.password = newPassword;
-    this.props.passwordResetExpires = undefined;
-    this.props.passwordResetToken = undefined;
+    this.props.passwordResetExpires = null;
+    this.props.passwordResetToken = null;
   }
 
   public toObject() {

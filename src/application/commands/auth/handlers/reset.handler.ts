@@ -1,9 +1,10 @@
 import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
 import { BadRequestException, Inject, Logger } from "@nestjs/common";
-import { ResetPasswordCommand } from "../reset-password.command";
+
 import { UserRepository } from "domain/user/user.repository";
 import { HashService } from "infrastructure/services/hash.service";
 import { PasswordResetCompletedEvent } from "application/events/user/password-reset-completed.event";
+import { ResetPasswordCommand } from "../reset-password.command";
 
 @CommandHandler(ResetPasswordCommand)
 export class ResetPasswordHandler
@@ -32,7 +33,9 @@ export class ResetPasswordHandler
 
     try {
       const hashedPassword = await this.hashService.hash(command.newPassword);
+
       user.updatePassword(hashedPassword);
+      await this.userRepository.save(user);
 
       this.eventBus.publish(
         new PasswordResetCompletedEvent("Password reset completed", user.email)

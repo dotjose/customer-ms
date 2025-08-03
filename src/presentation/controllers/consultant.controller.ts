@@ -101,7 +101,7 @@ export class ConsultantController {
     status: 201,
     description: "Your message has been sent",
   })
-  async sendMessage(@Body() dto: ContactUsDto, @Param("id") id: string) {
+  async sendMessage(@Body() dto: ContactUsDto) {
     const { name, email, subject, message } = dto;
     return await this.commandBus.execute(
       new ContactUsCommand(name, email, subject, message)

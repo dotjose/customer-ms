@@ -121,8 +121,7 @@ export class LoginDto {
 }
 
 export class ForgotPasswordDto {
-  @ApiProperty({ example: "john@example.com or " })
-  @IsEmail()
+  @ApiProperty({ example: "john@example.com or +1234567890" })
   @IsString()
   email: string;
 }
