@@ -10,7 +10,9 @@ export interface SocialLink {
     | "instagram"
     | "linkedin"
     | "youtube"
-    | "tiktok";
+    | "tiktok"
+    | "whatsapp"
+    | "telegram";
   url: string;
 }
 

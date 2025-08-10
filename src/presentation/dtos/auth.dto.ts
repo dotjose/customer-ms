@@ -36,7 +36,9 @@ export class SocialLinkDto {
     | "instagram"
     | "linkedin"
     | "youtube"
-    | "tiktok";
+    | "tiktok"
+    | "whatsapp"
+    | "telegram";
 
   @IsUrl()
   @ApiProperty()
