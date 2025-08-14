@@ -426,15 +426,41 @@ export class MongoConsultantRepository implements ConsultantRepository {
 
     // Location filtering
     if (location?.coordinates) {
-      pipeline.push({
-        $match: {
-          "userDetails.location.coordinates": {
-            $geoWithin: {
-              $centerSphere: [location.coordinates, 0.02354], // ~1.5 mile radius
+      const hasCountry = location?.country && location.country.trim() !== "";
+      const hasState = location?.state && location.state.trim() !== "";
+      const hasCity = location?.city && location.city.trim() !== "";
+
+      if (hasCountry && (!hasState || !hasCity)) {
+        // Only country-level filtering
+        pipeline.push({
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "professionDetails",
+          },
+        });
+        pipeline.push({
+          $match: {
+            "userDetails.location.country": location.country,
+          },
+        });
+      } else {
+        // State or City available → use geospatial search (~200km radius)
+        const earthRadiusInKm = 6378.1;
+        const radiusInKm = 200;
+        const radiusInRadians = radiusInKm / earthRadiusInKm;
+
+        pipeline.push({
+          $match: {
+            "userDetails.location.coordinates": {
+              $geoWithin: {
+                $centerSphere: [location.coordinates, radiusInRadians],
+              },
             },
           },
-        },
-      });
+        });
+      }
     }
 
     // Projection
