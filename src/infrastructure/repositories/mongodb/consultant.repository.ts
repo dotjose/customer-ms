@@ -430,7 +430,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
       const hasState = location?.state && location.state.trim() !== "";
       const hasCity = location?.city && location.city.trim() !== "";
 
-      if (hasCountry && (!hasState || !hasCity)) {
+      if (hasCountry && !hasState && !hasCity) {
         // Only country-level filtering
         pipeline.push({
           $lookup: {
