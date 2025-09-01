@@ -445,6 +445,13 @@ export class MongoConsultantRepository implements ConsultantRepository {
             "userDetails.location.country": location.country,
           },
         });
+        if(hasState && !hasCity) {
+          pipeline.push({
+            $match: {
+              "userDetails.location.state": location.state,
+            },
+          });
+        }
       } else {
         // State or City available → use geospatial search (~200km radius)
         const earthRadiusInKm = 6378.1;
