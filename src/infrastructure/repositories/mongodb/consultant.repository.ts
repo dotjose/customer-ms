@@ -13,7 +13,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
   constructor(
     @InjectModel(ConsultantDocument.name)
     private readonly consultantModel: Model<ConsultantDocument>
-  ) {}
+  ) { }
 
   async getConsultantDetails(id: string): Promise<ConsultantWithUserDetails> {
     const consultantDetails = await this.consultantModel
@@ -433,25 +433,16 @@ export class MongoConsultantRepository implements ConsultantRepository {
       if (hasCountry && !hasState && !hasCity) {
         // Only country-level filtering
         pipeline.push({
-          $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "professionDetails",
-          },
-        });
-        pipeline.push({
           $match: {
             "userDetails.location.country": location.country,
           },
         });
-        if(hasState && !hasCity) {
-          pipeline.push({
-            $match: {
-              "userDetails.location.state": location.state,
-            },
-          });
-        }
+      } if (hasState && !hasCity) {
+        pipeline.push({
+          $match: {
+            "userDetails.location.state": location.state,
+          },
+        });
       } else {
         // State or City available → use geospatial search (~200km radius)
         const earthRadiusInKm = 6378.1;
