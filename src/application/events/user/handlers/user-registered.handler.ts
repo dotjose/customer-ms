@@ -44,10 +44,7 @@ export class UserRegisteredHandler
       // this.logger.log(`Email sent to ${event.email}`);
 
       // Send SMS
-      await this.awsConfigService.sendSMS({
-        PhoneNumber: event.phone,
-        Message: smsTemplate,
-      });
+      await this.awsConfigService.sendSMS(event.phone, smsTemplate);
       this.logger.log(`SMS sent to ${event.phone}`);
     } catch (error) {
       this.logger.error(

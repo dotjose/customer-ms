@@ -17,6 +17,11 @@ export class AWSConfigService {
   private readonly sesClient: SESClient;
   private readonly snsClient: SNSClient;
 
+  // SMS-related defaults from env
+  private readonly defaultSenderId: string | undefined; // For international
+  private readonly originationNumber: string | undefined; // Long code / toll-free
+  private readonly transactionalType = "Transactional"; // Always Transactional for OTPs
+
   constructor(private readonly configService: ConfigService) {
     const awsConfig = {
       region: this.configService.get<string>("AWS_REGION"),
@@ -30,8 +35,16 @@ export class AWSConfigService {
 
     this.sesClient = new SESClient(awsConfig);
     this.snsClient = new SNSClient(awsConfig);
+
+    this.defaultSenderId = this.configService.get<string>("AWS_SMS_SENDER_ID");
+    this.originationNumber = this.configService.get<string>(
+      "AWS_SMS_ORIGINATION_NUMBER"
+    );
   }
 
+  /**
+   * Send an email via AWS SES
+   */
   async sendEmail(params: SendEmailCommandInput): Promise<void> {
     try {
       this.logger.log(
@@ -40,19 +53,56 @@ export class AWSConfigService {
       const command = new SendEmailCommand(params);
       await this.sesClient.send(command);
       this.logger.log("Email sent successfully.");
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to send email: ${error.message}`, error.stack);
       throw new Error(`Failed to send email: ${error.message}`);
     }
   }
 
-  async sendSMS(params: PublishCommandInput): Promise<void> {
+  /**
+   * Send an SMS via AWS SNS/Pinpoint
+   */
+  async sendSMS(phoneNumber: string, message: string): Promise<void> {
     try {
-      this.logger.log(`Attempting to send SMS to: ${params.PhoneNumber}`);
+      this.logger.log(`Attempting to send SMS to: ${phoneNumber}`);
+
+      const isUSNumber = phoneNumber.startsWith("+1");
+
+      // Base attributes
+      const messageAttributes: Record<string, any> = {
+        "AWS.SNS.SMS.SMSType": {
+          DataType: "String",
+          StringValue: this.transactionalType,
+        },
+      };
+
+      // Add SenderID only for non-US numbers (e.g., Ethiopia)
+      if (!isUSNumber && this.defaultSenderId) {
+        messageAttributes["AWS.SNS.SMS.SenderID"] = {
+          DataType: "String",
+          StringValue: this.defaultSenderId,
+        };
+      }
+
+      // Always include origination number if configured
+      if (this.originationNumber) {
+        messageAttributes["AWS.MM.SMS.OriginationNumber"] = {
+          DataType: "String",
+          StringValue: this.originationNumber,
+        };
+      }
+
+      const params: PublishCommandInput = {
+        PhoneNumber: phoneNumber,
+        Message: message,
+        MessageAttributes: messageAttributes,
+      };
+
       const command = new PublishCommand(params);
       await this.snsClient.send(command);
+
       this.logger.log("SMS sent successfully.");
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to send SMS: ${error.message}`, error.stack);
       throw new Error(`Failed to send SMS: ${error.message}`);
     }
