@@ -68,15 +68,14 @@ export class AWSConfigService {
 
       const isUSNumber = phoneNumber.startsWith("+1");
 
-      // Base attributes
       const messageAttributes: Record<string, any> = {
         "AWS.SNS.SMS.SMSType": {
           DataType: "String",
-          StringValue: this.transactionalType,
+          StringValue: "Transactional",
         },
       };
 
-      // Add SenderID only for non-US numbers (e.g., Ethiopia)
+      // Use SenderID for NON-US numbers ONLY
       if (!isUSNumber && this.defaultSenderId) {
         messageAttributes["AWS.SNS.SMS.SenderID"] = {
           DataType: "String",
@@ -84,9 +83,9 @@ export class AWSConfigService {
         };
       }
 
-      // Always include origination number if configured
+      // Correct attribute for toll-free / long codes
       if (this.originationNumber) {
-        messageAttributes["AWS.MM.SMS.OriginationNumber"] = {
+        messageAttributes["AWS.SNS.SMS.OriginationNumber"] = {
           DataType: "String",
           StringValue: this.originationNumber,
         };
@@ -99,9 +98,9 @@ export class AWSConfigService {
       };
 
       const command = new PublishCommand(params);
-      await this.snsClient.send(command);
+      const result = await this.snsClient.send(command);
 
-      this.logger.log("SMS sent successfully.");
+      this.logger.log(`SMS sent successfully. MessageId: ${result.MessageId}`);
     } catch (error: any) {
       this.logger.error(`Failed to send SMS: ${error.message}`, error.stack);
       throw new Error(`Failed to send SMS: ${error.message}`);
