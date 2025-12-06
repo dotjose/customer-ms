@@ -18,8 +18,8 @@ export class AWSConfigService {
   private readonly snsClient: SNSClient;
 
   // SMS-related defaults from env
-  private readonly defaultSenderId: string | undefined; // For international
-  private readonly originationNumber: string | undefined; // Long code / toll-free
+  private readonly defaultSenderId: string | undefined; // For international only
+  private readonly tollFreePoolArn: string; // Your US Toll-Free pool ARN
   private readonly transactionalType = "Transactional"; // Always Transactional for OTPs
 
   constructor(private readonly configService: ConfigService) {
@@ -37,9 +37,11 @@ export class AWSConfigService {
     this.snsClient = new SNSClient(awsConfig);
 
     this.defaultSenderId = this.configService.get<string>("AWS_SMS_SENDER_ID");
-    this.originationNumber = this.configService.get<string>(
-      "AWS_SMS_ORIGINATION_NUMBER"
-    );
+
+    // Use your US Toll-Free pool ARN here
+    this.tollFreePoolArn = this.configService.get<string>(
+      "AWS_SMS_TOLL_FREE_POOL_ARN"
+    )!;
   }
 
   /**
@@ -48,7 +50,9 @@ export class AWSConfigService {
   async sendEmail(params: SendEmailCommandInput): Promise<void> {
     try {
       this.logger.log(
-        `Attempting to send email to: ${params.Destination?.ToAddresses?.join(", ")}`
+        `Attempting to send email to: ${params.Destination?.ToAddresses?.join(
+          ", "
+        )}`
       );
       const command = new SendEmailCommand(params);
       await this.sesClient.send(command);
@@ -60,7 +64,7 @@ export class AWSConfigService {
   }
 
   /**
-   * Send an SMS via AWS SNS/Pinpoint
+   * Send an SMS via AWS SNS using toll-free pool for US numbers
    */
   async sendSMS(phoneNumber: string, message: string): Promise<void> {
     try {
@@ -71,23 +75,21 @@ export class AWSConfigService {
       const messageAttributes: Record<string, any> = {
         "AWS.SNS.SMS.SMSType": {
           DataType: "String",
-          StringValue: "Transactional",
+          StringValue: this.transactionalType,
         },
       };
 
-      // Use SenderID for NON-US numbers ONLY
-      if (!isUSNumber && this.defaultSenderId) {
+      if (isUSNumber) {
+        // Use toll-free pool ARN for US numbers
+        messageAttributes["AWS.SNS.SMS.OriginationNumber"] = {
+          DataType: "String",
+          StringValue: this.tollFreePoolArn,
+        };
+      } else if (this.defaultSenderId) {
+        // For international numbers, use SenderID
         messageAttributes["AWS.SNS.SMS.SenderID"] = {
           DataType: "String",
           StringValue: this.defaultSenderId,
-        };
-      }
-
-      // Correct attribute for toll-free / long codes
-      if (this.originationNumber) {
-        messageAttributes["AWS.SNS.SMS.OriginationNumber"] = {
-          DataType: "String",
-          StringValue: this.originationNumber,
         };
       }
 
