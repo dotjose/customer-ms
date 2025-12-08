@@ -18,9 +18,9 @@ export class AWSConfigService {
   private readonly snsClient: SNSClient;
 
   // SMS-related defaults from env
-  private readonly defaultSenderId: string | undefined; // For international only
-  private readonly tollFreePoolArn: string; // Your US Toll-Free pool ARN
-  private readonly transactionalType = "Transactional"; // Always Transactional for OTPs
+  private readonly defaultSenderId: string | undefined;
+  private readonly tollFreeNumber: string; // Changed from pool ARN to actual number
+  private readonly transactionalType = "Transactional";
 
   constructor(private readonly configService: ConfigService) {
     const awsConfig = {
@@ -37,10 +37,10 @@ export class AWSConfigService {
     this.snsClient = new SNSClient(awsConfig);
 
     this.defaultSenderId = this.configService.get<string>("AWS_SMS_SENDER_ID");
-
-    // Use your US Toll-Free pool ARN here
-    this.tollFreePoolArn = this.configService.get<string>(
-      "AWS_SMS_TOLL_FREE_POOL_ARN"
+    
+    // Store your actual toll-free number (e.g., +18885551234), not pool ARN
+    this.tollFreeNumber = this.configService.get<string>(
+      "AWS_SMS_TOLL_FREE_NUMBER"
     )!;
   }
 
@@ -64,14 +64,18 @@ export class AWSConfigService {
   }
 
   /**
-   * Send an SMS via AWS SNS using toll-free pool for US numbers
+   * Send an SMS via AWS SNS
    */
   async sendSMS(phoneNumber: string, message: string): Promise<void> {
     try {
       this.logger.log(`Attempting to send SMS to: ${phoneNumber}`);
 
-      const isUSNumber = phoneNumber.startsWith("+1");
+      const params: PublishCommandInput = {
+        PhoneNumber: phoneNumber,
+        Message: message,
+      };
 
+      // Add message attributes for SMS
       const messageAttributes: Record<string, any> = {
         "AWS.SNS.SMS.SMSType": {
           DataType: "String",
@@ -79,25 +83,73 @@ export class AWSConfigService {
         },
       };
 
-      if (isUSNumber) {
-        // Use toll-free pool ARN for US numbers
-        messageAttributes["AWS.SNS.SMS.OriginationNumber"] = {
-          DataType: "String",
-          StringValue: this.tollFreePoolArn,
-        };
-      } else if (this.defaultSenderId) {
-        // For international numbers, use SenderID
+      // For non-US numbers, add SenderID if configured
+      const isUSNumber = phoneNumber.startsWith("+1");
+      if (!isUSNumber && this.defaultSenderId) {
         messageAttributes["AWS.SNS.SMS.SenderID"] = {
           DataType: "String",
           StringValue: this.defaultSenderId,
         };
       }
 
+      // Only add attributes if we have any
+      if (Object.keys(messageAttributes).length > 0) {
+        params.MessageAttributes = messageAttributes;
+      }
+
+      // For toll-free numbers, you have two options:
+
+      // OPTION 1: If you want to send FROM your toll-free number
+      // (Note: This requires the toll-free number to be verified in SNS)
+      // if (isUSNumber && this.tollFreeNumber) {
+      //   // Send from your toll-free number
+      //   params.PhoneNumber = phoneNumber; // Recipient
+      //   // You would use OriginationNumber in the SMS preferences in AWS Console
+      //   // or verify and use the number directly
+      // }
+
+      const command = new PublishCommand(params);
+      const result = await this.snsClient.send(command);
+
+      this.logger.log(`SMS sent successfully. MessageId: ${result.MessageId}`);
+    } catch (error: any) {
+      this.logger.error(`Failed to send SMS: ${error.message}`, error.stack);
+      this.logger.error(`Error details: ${JSON.stringify(error, null, 2)}`);
+      throw new Error(`Failed to send SMS: ${error.message}`);
+    }
+  }
+
+  /**
+   * Send SMS using a specific toll-free number as the sender
+   * (Requires toll-free number to be verified in SNS)
+   */
+  async sendSMSFromTollFree(
+    phoneNumber: string, 
+    message: string, 
+    useTollFree: boolean = true
+  ): Promise<void> {
+    try {
+      if (useTollFree && !this.tollFreeNumber) {
+        throw new Error("Toll-free number is not configured");
+      }
+
       const params: PublishCommandInput = {
         PhoneNumber: phoneNumber,
         Message: message,
-        MessageAttributes: messageAttributes,
+        MessageAttributes: {
+          "AWS.SNS.SMS.SMSType": {
+            DataType: "String",
+            StringValue: this.transactionalType,
+          },
+        },
       };
+
+      // If using toll-free as sender, it must be verified in SNS
+      // and you need to configure it in AWS Console under SNS -> Text messaging
+      if (useTollFree) {
+        this.logger.log(`Sending SMS from toll-free: ${this.tollFreeNumber}`);
+        // Note: The sender number is configured in AWS Console, not in API call
+      }
 
       const command = new PublishCommand(params);
       const result = await this.snsClient.send(command);
