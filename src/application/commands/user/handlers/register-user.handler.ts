@@ -44,7 +44,7 @@ export class RegisterUserHandler
     const hashedPassword = await this.hashService.hash(command.password);
 
     const user = new User({
-      email: command.email,
+      email: normalizedEmail,
       password: hashedPassword,
       firstName: command.firstName,
       lastName: command.lastName,

@@ -17,11 +17,11 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
   async execute(command: LoginCommand): Promise<{ token: string; user: any }> {
     const { email, password } = command;
-
+    const normalizedEmail = email.trim().toLowerCase();
     this.logger.log(`Attempting login for email: ${email}`);
 
     // Fetch user by email
-    const user = await this.userRepository.findByEmailOrPhone(email);
+    const user = await this.userRepository.findByEmailOrPhone(normalizedEmail);
 
     if (!user) {
       this.logger.warn(
