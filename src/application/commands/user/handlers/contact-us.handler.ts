@@ -30,7 +30,7 @@ export class ContactUsHandler implements ICommandHandler<ContactUsCommand> {
         Body: { Html: { Data: emailHtml } },
         Subject: { Data: `📩 New Contact Us Message from ${name}` },
       },
-      Source: process.env.AWS_SES_FROM_EMAIL,
+      Source: email,
       ReplyToAddresses: [email],
     });
 

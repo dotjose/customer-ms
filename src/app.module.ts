@@ -36,6 +36,7 @@ import { ResetPasswordHandler } from "application/commands/auth/handlers/reset.h
 import { AddConsultantReviewHandler } from "application/commands/review/handlers/create-review.handler";
 import { UpdatePasswordHandler } from "application/commands/auth/handlers/update-password.handler";
 import { UpdateUserHandler } from "application/commands/user/handlers/update-user.handler";
+import { ContactUsHandler } from "application/commands/user/handlers/contact-us.handler";
 
 // Query Handlers
 import { GetNearbyConsultantsHandler } from "./application/queries/consultant/handlers/get-nearby-consultants.handler";
@@ -103,6 +104,7 @@ const commandHandlers = [
   AddConsultantReviewHandler,
   UpdatePasswordHandler,
   UpdateUserHandler,
+  ContactUsHandler
 ];
 
 const queryHandlers = [
