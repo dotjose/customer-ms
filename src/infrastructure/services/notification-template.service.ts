@@ -409,7 +409,7 @@ export class NotificationTemplateService {
                                 </tr>
                             </table>
 
-                            <p style="margin: 0; color: #475569; font-size: 12px;">© ${current_year} Habesha Network. All rights reserved by Habesha Circle Team.</p>
+                            <p style="margin: 0; color: #475569; font-size: 12px;">© ${current_year} Habesha Network. All rights reserved by Habesha Network Team.</p>
                         </td>
                     </tr>
                 </table>
