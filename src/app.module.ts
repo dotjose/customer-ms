@@ -11,6 +11,7 @@ import {
 import { CacheModule } from "@nestjs/cache-manager";
 import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from "@nestjs/core";
 import { TerminusModule } from "@nestjs/terminus";
+import { ScheduleModule } from "@nestjs/schedule";
 
 // Interceptors
 import { LoggingInterceptor } from "./infrastructure/monitoring/logging.interceptor";
@@ -24,6 +25,7 @@ import { AuthController } from "./presentation/controllers/auth.controller";
 import { ConsultantController } from "./presentation/controllers/consultant.controller";
 import { ReviewController } from "./presentation/controllers/review.controller";
 import { HealthController } from "infrastructure/health/health.controller";
+import { NewsletterController } from "./presentation/controllers/newsletter.controller";
 
 // Command Handlers
 import { LoginHandler } from "./application/commands/auth/handlers/login.handler";
@@ -37,6 +39,7 @@ import { AddConsultantReviewHandler } from "application/commands/review/handlers
 import { UpdatePasswordHandler } from "application/commands/auth/handlers/update-password.handler";
 import { UpdateUserHandler } from "application/commands/user/handlers/update-user.handler";
 import { ContactUsHandler } from "application/commands/user/handlers/contact-us.handler";
+import { SubscribeNewsletterHandler, UnsubscribeNewsletterHandler, UpdateNewsletterPreferencesHandler } from "./application/commands/newsletter/handlers/newsletter.handlers";
 
 // Query Handlers
 import { GetNearbyConsultantsHandler } from "./application/queries/consultant/handlers/get-nearby-consultants.handler";
@@ -44,6 +47,7 @@ import { GetPaginatedReviewsHandler } from "./application/queries/reviews/handle
 import { SearchConsultantsHandler } from "application/queries/consultant/handlers/search-consultants.handler";
 import { GetConsultantDetailHandler } from "application/queries/consultant/handlers/get-consultant-detail.handler";
 import { GetProfessionsHandler } from "application/queries/consultant/handlers/get-professions.handler";
+import { GetSubscriberByTokenHandler, GetSubscriberPreferencesHandler } from "./application/queries/newsletter/handlers/newsletter.handlers";
 
 // Event Handlers
 import { UserRegisteredHandler } from "./application/events/user/handlers/user-registered.handler";
@@ -67,6 +71,8 @@ import { GetUserHandler } from "application/queries/user/handlers/get-user.handl
 import { VerificationTokenService } from "infrastructure/services/verification-token.service";
 import { AWSConfigService } from "infrastructure/config/aws.config";
 import { NotificationTemplateService } from "infrastructure/services/notification-template.service";
+import { NewsletterTokenService } from "infrastructure/services/newsletter-token.service";
+import { NewsletterCronService } from "infrastructure/services/newsletter-cron.service";
 import { PrometheusController } from "infrastructure/monitoring/prometheus.controller";
 import { DatabaseService } from "infrastructure/services/database.service";
 import { RedisHealthIndicator } from "infrastructure/health/redis.health";
@@ -78,6 +84,7 @@ import { SeederService } from "infrastructure/seeder/seeder.service";
 import { MongoUserRepository } from "./infrastructure/repositories/mongodb/user.repository";
 import { MongoConsultantRepository } from "./infrastructure/repositories/mongodb/consultant.repository";
 import { MongoProfessionRepository } from "infrastructure/repositories/mongodb/profession.repository";
+import { MongoNewsletterRepository } from "./infrastructure/repositories/mongodb/newsletter.repository";
 
 // Schemas
 import {
@@ -92,6 +99,10 @@ import {
   ProfessionDocument,
   ProfessionSchema,
 } from "./infrastructure/persistence/mongodb/schemas/profession.schema";
+import {
+  NewsletterSubscriberDocument,
+  NewsletterSubscriberSchema,
+} from "./infrastructure/persistence/mongodb/schemas/newsletter.schema";
 
 const commandHandlers = [
   LoginHandler,
@@ -104,7 +115,10 @@ const commandHandlers = [
   AddConsultantReviewHandler,
   UpdatePasswordHandler,
   UpdateUserHandler,
-  ContactUsHandler
+  ContactUsHandler,
+  SubscribeNewsletterHandler,
+  UnsubscribeNewsletterHandler,
+  UpdateNewsletterPreferencesHandler,
 ];
 
 const queryHandlers = [
@@ -114,6 +128,8 @@ const queryHandlers = [
   GetUserHandler,
   GetConsultantDetailHandler,
   GetProfessionsHandler,
+  GetSubscriberByTokenHandler,
+  GetSubscriberPreferencesHandler,
 ];
 
 const eventHandlers = [
@@ -143,6 +159,8 @@ const services = [
   RedisHealthIndicator,
   ElasticsearchHealthIndicator,
   SeederService,
+  NewsletterTokenService,
+  NewsletterCronService,
 ];
 
 @Module({
@@ -169,6 +187,7 @@ const services = [
       { name: UserDocument.name, schema: UserSchema },
       { name: ConsultantDocument.name, schema: ConsultantSchema },
       { name: ProfessionDocument.name, schema: ProfessionSchema },
+      { name: NewsletterSubscriberDocument.name, schema: NewsletterSubscriberSchema },
     ]),
 
     // JWT
@@ -203,6 +222,7 @@ const services = [
 
     CqrsModule,
     TerminusModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [
     AuthController,
@@ -210,6 +230,7 @@ const services = [
     ReviewController,
     PrometheusController,
     HealthController,
+    NewsletterController,
   ],
   providers: [
     // Global Guards
@@ -246,6 +267,10 @@ const services = [
     {
       provide: "ProfessionRepository",
       useClass: MongoProfessionRepository,
+    },
+    {
+      provide: "NewsletterRepository",
+      useClass: MongoNewsletterRepository,
     },
 
     // Handlers and Services

@@ -32,6 +32,7 @@
     "@nestjs/mongoose": "^10.0.1",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^7.1.13",
     "@nestjs/terminus": "^10.0.0",
     "@nestjs/throttler": "^6.3.0",
@@ -96,6 +97,12 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^domain/(.*)$": "<rootDir>/domain/$1",
+      "^infrastructure/(.*)$": "<rootDir>/infrastructure/$1",
+      "^application/(.*)$": "<rootDir>/application/$1",
+      "^presentation/(.*)$": "<rootDir>/presentation/$1"
+    }
   }
 }
