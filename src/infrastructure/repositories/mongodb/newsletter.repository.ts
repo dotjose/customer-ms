@@ -43,6 +43,7 @@ export class MongoNewsletterRepository implements NewsletterRepository {
           obj.preferences.jobs,
           obj.preferences.professionals,
           obj.preferences.events,
+          obj.preferences.realestate,
           obj.preferences.frequency
         ),
         createdAt: obj.createdAt,
