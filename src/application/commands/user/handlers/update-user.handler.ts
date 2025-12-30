@@ -42,6 +42,8 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       firstName: existingUser.firstName, // mandatory
       lastName: existingUser.lastName, // mandatory
       roles: existingUser.roles, // mandatory
+      status: existingUser.status, // mandatory
+      isSystemUser: existingUser.isSystemUser, // mandatory
       isVerified: existingUser.isVerified, // mandatory
       phoneNumber: existingUser.phoneNumber, // mandatory
       createdAt: existingUser.createdAt, // mandatory

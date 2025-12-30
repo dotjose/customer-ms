@@ -74,4 +74,28 @@ export class PrometheusService {
       throw new Error("Failed to retrieve Prometheus metrics");
     }
   }
+
+  /**
+   * Increment a generic counter metric
+   * @param {string} name - Counter name
+   * @param {Record<string, string>} labels - Optional labels
+   */
+  incrementCounter(name: string, labels?: Record<string, string>): void {
+    try {
+      // Create or get counter
+      let counter = register.getSingleMetric(name) as Counter<string>;
+      
+      if (!counter) {
+        counter = new Counter({
+          name,
+          help: `Counter for ${name}`,
+          labelNames: labels ? Object.keys(labels) : [],
+        });
+      }
+
+      counter.inc(labels || {});
+    } catch (error) {
+      this.logger.error(`Error incrementing counter ${name}:`, error);
+    }
+  }
 }

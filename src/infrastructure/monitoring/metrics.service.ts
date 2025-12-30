@@ -57,4 +57,18 @@ export class MetricsService {
       );
     }
   }
+
+  /**
+   * Increment a counter metric (for view tracking and other counters)
+   */
+  incrementCounter(metricName: string, labels?: Record<string, string>): void {
+    try {
+      this.prometheusService.incrementCounter(metricName, labels);
+    } catch (error) {
+      this.logger.error(
+        `Failed to increment counter ${metricName}: ${error.message}`,
+        error.stack
+      );
+    }
+  }
 }

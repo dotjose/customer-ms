@@ -7,4 +7,6 @@ export interface UserRepository {
   findByEmailAndPhone(email: string, phone: string): Promise<User | null>;
   findValidToken(token: string): Promise<User | null>;
   save(user: User): Promise<UserResponseDto>;
+  delete(id: string): Promise<void>;
+  findAll(query: any): Promise<{ items: User[]; total: number }>;
 }

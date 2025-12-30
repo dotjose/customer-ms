@@ -71,6 +71,38 @@ export class MongoUserRepository implements UserRepository {
     return UserMapper.toResponse(new User(userDoc.toObject(), userDoc._id));
   }
 
+  async delete(id: string): Promise<void> {
+    if (!Types.ObjectId.isValid(id)) return;
+    await this.userModel.deleteOne({ _id: new Types.ObjectId(id) }).exec();
+  }
+
+  async findAll(query: any): Promise<{ items: User[]; total: number }> {
+    const { offset = 0, limit = 10, search = "", status, role } = query;
+    const filter: any = {};
+    
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phoneNumber: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (status) filter.status = status;
+    if (role) filter.roles = role;
+
+    const [items, total] = await Promise.all([
+      this.userModel.find(filter).skip(offset).limit(limit).sort({ createdAt: -1 }).exec(),
+      this.userModel.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      items: items.map(doc => this.toEntity(doc)),
+      total,
+    };
+  }
+
   private toEntity(doc: UserDocument): User {
     return new User(doc.toObject(), doc._id);
   }

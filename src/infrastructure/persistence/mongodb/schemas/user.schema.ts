@@ -22,6 +22,12 @@ export class UserDocument extends Document {
   @Prop({ type: [String], default: ["USER"] })
   roles: string[];
 
+  @Prop({ type: String, enum: ["ACTIVE", "SUSPENDED", "BANNED", "BLOCKED"], default: "ACTIVE" })
+  status: string;
+
+  @Prop({ default: false })
+  isSystemUser: boolean;
+
   @Prop({ default: false })
   isVerified: boolean;
 
@@ -91,3 +97,5 @@ UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ phoneNumber: 1 }, { unique: true });
 UserSchema.index({ roles: 1 });
 UserSchema.index({ isVerified: 1 });
+UserSchema.index({ status: 1 });
+UserSchema.index({ isSystemUser: 1 });

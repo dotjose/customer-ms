@@ -26,6 +26,9 @@ import { ConsultantController } from "./presentation/controllers/consultant.cont
 import { ReviewController } from "./presentation/controllers/review.controller";
 import { HealthController } from "infrastructure/health/health.controller";
 import { NewsletterController } from "./presentation/controllers/newsletter.controller";
+import { ViewTrackingController } from "./presentation/controllers/view-tracking.controller";
+import { AdminUserController } from "./presentation/controllers/admin-user.controller";
+import { AdminFeedbackController } from "./presentation/controllers/admin-feedback.controller";
 
 // Command Handlers
 import { LoginHandler } from "./application/commands/auth/handlers/login.handler";
@@ -40,6 +43,14 @@ import { UpdatePasswordHandler } from "application/commands/auth/handlers/update
 import { UpdateUserHandler } from "application/commands/user/handlers/update-user.handler";
 import { ContactUsHandler } from "application/commands/user/handlers/contact-us.handler";
 import { SubscribeNewsletterHandler, UnsubscribeNewsletterHandler, UpdateNewsletterPreferencesHandler } from "./application/commands/newsletter/handlers/newsletter.handlers";
+import { IncrementViewHandler } from "./application/commands/view-tracking/handlers/increment-view.handler";
+import { CreateAdminHandler } from "./application/commands/admin/handlers/create-admin.handler";
+import { UpdateAdminHandler } from "./application/commands/admin/handlers/update-admin.handler";
+import { DeleteAdminHandler } from "./application/commands/admin/handlers/delete-admin.handler";
+import { BlockUserHandler } from "./application/commands/admin/handlers/block-user.handler";
+import { SuspendUserHandler } from "./application/commands/admin/handlers/suspend-user.handler";
+import { BanUserHandler } from "./application/commands/admin/handlers/ban-user.handler";
+import { ActivateUserHandler } from "./application/commands/admin/handlers/activate-user.handler";
 
 // Query Handlers
 import { GetNearbyConsultantsHandler } from "./application/queries/consultant/handlers/get-nearby-consultants.handler";
@@ -48,6 +59,13 @@ import { SearchConsultantsHandler } from "application/queries/consultant/handler
 import { GetConsultantDetailHandler } from "application/queries/consultant/handlers/get-consultant-detail.handler";
 import { GetProfessionsHandler } from "application/queries/consultant/handlers/get-professions.handler";
 import { GetSubscriberByTokenHandler, GetSubscriberPreferencesHandler } from "./application/queries/newsletter/handlers/newsletter.handlers";
+import { GetViewCountHandler, GetBulkViewCountsHandler } from "./application/queries/view-tracking/handlers/get-view-count.handler";
+import { GetTrendingHandler } from "./application/queries/view-tracking/handlers/get-trending.handler";
+import { GetUsersHandler } from "./application/queries/admin/handlers/get-users.handler";
+import { GetUserByIdHandler } from "./application/queries/admin/handlers/get-user-by-id.handler";
+import { GetAdminsHandler } from "./application/queries/admin/handlers/get-admins.handler";
+import { GetAdminByIdHandler } from "./application/queries/admin/handlers/get-admin-by-id.handler";
+import { SearchUserFeedbackHandler } from "./application/queries/admin/handlers/search-user-feedback.handler";
 
 // Event Handlers
 import { UserRegisteredHandler } from "./application/events/user/handlers/user-registered.handler";
@@ -79,12 +97,19 @@ import { RedisHealthIndicator } from "infrastructure/health/redis.health";
 import { ElasticsearchHealthIndicator } from "infrastructure/health/elasticsearch.health";
 import { OpenAIHealthIndicator } from "infrastructure/health/openai.health";
 import { SeederService } from "infrastructure/seeder/seeder.service";
+import { ViewTrackingCacheService } from "./infrastructure/services/view-tracking-cache.service";
+import { BotDetectionService } from "./infrastructure/services/bot-detection.service";
+import { SuperAdminSeeder } from "./infrastructure/seeder/super-admin.seeder";
+import { JwtAuthGuard } from "./infrastructure/guards/jwt-auth.guard";
+import { RolesGuard } from "./infrastructure/guards/roles.guard";
 
 // Repositories
 import { MongoUserRepository } from "./infrastructure/repositories/mongodb/user.repository";
 import { MongoConsultantRepository } from "./infrastructure/repositories/mongodb/consultant.repository";
 import { MongoProfessionRepository } from "infrastructure/repositories/mongodb/profession.repository";
 import { MongoNewsletterRepository } from "./infrastructure/repositories/mongodb/newsletter.repository";
+import { MongoViewTrackingRepository } from "./infrastructure/repositories/mongodb/view-tracking.repository";
+import { MongoAdminRepository } from "./infrastructure/repositories/mongodb/admin.repository";
 
 // Schemas
 import {
@@ -103,6 +128,10 @@ import {
   NewsletterSubscriberDocument,
   NewsletterSubscriberSchema,
 } from "./infrastructure/persistence/mongodb/schemas/newsletter.schema";
+import {
+  ViewTrackingDocument,
+  ViewTrackingSchema,
+} from "./infrastructure/persistence/mongodb/schemas/view-tracking.schema";
 
 const commandHandlers = [
   LoginHandler,
@@ -119,6 +148,14 @@ const commandHandlers = [
   SubscribeNewsletterHandler,
   UnsubscribeNewsletterHandler,
   UpdateNewsletterPreferencesHandler,
+  IncrementViewHandler,
+  CreateAdminHandler,
+  UpdateAdminHandler,
+  DeleteAdminHandler,
+  BlockUserHandler,
+  SuspendUserHandler,
+  BanUserHandler,
+  ActivateUserHandler,
 ];
 
 const queryHandlers = [
@@ -130,6 +167,14 @@ const queryHandlers = [
   GetProfessionsHandler,
   GetSubscriberByTokenHandler,
   GetSubscriberPreferencesHandler,
+  GetViewCountHandler,
+  GetBulkViewCountsHandler,
+  GetTrendingHandler,
+  GetUsersHandler,
+  GetUserByIdHandler,
+  GetAdminsHandler,
+  GetAdminByIdHandler,
+  SearchUserFeedbackHandler,
 ];
 
 const eventHandlers = [
@@ -161,6 +206,9 @@ const services = [
   SeederService,
   NewsletterTokenService,
   NewsletterCronService,
+  ViewTrackingCacheService,
+  BotDetectionService,
+  SuperAdminSeeder,
 ];
 
 @Module({
@@ -188,6 +236,7 @@ const services = [
       { name: ConsultantDocument.name, schema: ConsultantSchema },
       { name: ProfessionDocument.name, schema: ProfessionSchema },
       { name: NewsletterSubscriberDocument.name, schema: NewsletterSubscriberSchema },
+      { name: ViewTrackingDocument.name, schema: ViewTrackingSchema },
     ]),
 
     // JWT
@@ -231,6 +280,9 @@ const services = [
     PrometheusController,
     HealthController,
     NewsletterController,
+    ViewTrackingController,
+    AdminUserController,
+    AdminFeedbackController,
   ],
   providers: [
     // Global Guards
@@ -272,8 +324,19 @@ const services = [
       provide: "NewsletterRepository",
       useClass: MongoNewsletterRepository,
     },
+    {
+      provide: "ViewTrackingRepository",
+      useClass: MongoViewTrackingRepository,
+    },
+    {
+      provide: "AdminRepository",
+      useClass: MongoAdminRepository,
+    },
 
     // Handlers and Services
+    SuperAdminSeeder,
+    JwtAuthGuard,
+    RolesGuard,
     ...services,
     ...commandHandlers,
     ...queryHandlers,
@@ -281,10 +344,15 @@ const services = [
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly superAdminSeeder: SuperAdminSeeder
+  ) {}
 
   async onModuleInit() {
     // Sync indexes when the app starts
     await this.databaseService.syncIndexes();
+    // Seed Super Admin if needed
+    await this.superAdminSeeder.seed();
   }
 }

@@ -3,6 +3,13 @@ import { ObjectId } from "mongodb";
 
 export type UserRole = "USER" | "CREATOR" | "CONSULTANT" | "ADMIN";
 
+export enum UserStatus {
+  ACTIVE = "ACTIVE",
+  SUSPENDED = "SUSPENDED",
+  BANNED = "BANNED",
+  BLOCKED = "BLOCKED",
+}
+
 export interface SocialLink {
   platform:
     | "facebook"
@@ -22,6 +29,8 @@ export interface UserProps {
   firstName: string;
   lastName: string;
   roles: UserRole[];
+  status: UserStatus;
+  isSystemUser: boolean;
   isVerified: boolean;
   phoneNumber: string;
   passwordResetToken?: string;
@@ -45,7 +54,11 @@ export class User extends AggregateRoot {
   constructor(props: UserProps, id?: ObjectId) {
     super();
     this._id = id || new ObjectId();
-    this.props = props;
+    this.props = {
+      ...props,
+      status: props.status || UserStatus.ACTIVE,
+      isSystemUser: props.isSystemUser || false,
+    };
   }
 
   get id(): string {
@@ -94,6 +107,14 @@ export class User extends AggregateRoot {
 
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  get status(): UserStatus {
+    return this.props.status;
+  }
+
+  get isSystemUser(): boolean {
+    return this.props.isSystemUser;
   }
 
   get avatar(): string {
@@ -148,6 +169,39 @@ export class User extends AggregateRoot {
     this.props.password = newPassword;
     this.props.passwordResetExpires = null;
     this.props.passwordResetToken = null;
+  }
+
+  public activate(): void {
+    this.props.status = UserStatus.ACTIVE;
+    this.props.updatedAt = new Date();
+  }
+
+  public suspend(): void {
+    this.ensureNotSystemUser();
+    this.props.status = UserStatus.SUSPENDED;
+    this.props.updatedAt = new Date();
+  }
+
+  public ban(): void {
+    this.ensureNotSystemUser();
+    this.props.status = UserStatus.BANNED;
+    this.props.updatedAt = new Date();
+  }
+
+  public block(): void {
+    this.ensureNotSystemUser();
+    this.props.status = UserStatus.BLOCKED;
+    this.props.updatedAt = new Date();
+  }
+
+  private ensureNotSystemUser(): void {
+    if (this.props.isSystemUser) {
+      throw new Error("System users cannot be blocked, banned, or suspended.");
+    }
+  }
+
+  public canBeDeleted(): boolean {
+    return !this.props.isSystemUser;
   }
 
   public toObject() {

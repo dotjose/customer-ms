@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
 import { ConflictException, Inject, Logger } from "@nestjs/common";
 
 import { RegisterUserCommand } from "../register-user.command";
-import { User } from "domain/user/user.entity";
+import { User, UserStatus } from "domain/user/user.entity";
 import { UserRegisteredEvent } from "application/events/user/user-registered.event";
 import { HashService } from "infrastructure/services/hash.service";
 import { UserRepository } from "domain/user/user.repository";
@@ -51,6 +51,8 @@ export class RegisterUserHandler
       phoneNumber: command.phoneNumber,
       roles: ["USER"],
       isVerified: false,
+      status: UserStatus.ACTIVE,
+      isSystemUser: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
