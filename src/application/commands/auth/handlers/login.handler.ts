@@ -59,6 +59,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
         fullName: user.fullName,
         phone: user.phoneNumber,
         avatar: user.avatar,
+        roles: user.roles,
       },
     };
   }
