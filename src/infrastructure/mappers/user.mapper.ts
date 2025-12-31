@@ -14,6 +14,7 @@ export class UserMapper {
       bio: user.bio,
       social: user.socials,
       avatar: user.avatar,
+      status: user.status,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });

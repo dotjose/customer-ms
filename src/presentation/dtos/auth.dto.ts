@@ -242,6 +242,7 @@ export class UserResponseDto {
   avatar: string;
   social: SocialLinkDto[];
   location: LocationDto;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
 
