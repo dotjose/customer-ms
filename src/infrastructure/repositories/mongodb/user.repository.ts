@@ -76,9 +76,12 @@ export class MongoUserRepository implements UserRepository {
     await this.userModel.deleteOne({ _id: new Types.ObjectId(id) }).exec();
   }
 
-  async findAll(query: any): Promise<{ items: User[]; total: number }> {
+  async findAll(query: any): Promise<{ items: UserResponseDto[]; total: number }> {
     const { offset = 0, limit = 10, search = "", status, role } = query;
-    const filter: any = {};
+    const filter: any = {
+      roles: { $ne: "ADMIN" },
+      isVerified: true
+    };
     
     if (search) {
       filter.$or = [
@@ -98,7 +101,7 @@ export class MongoUserRepository implements UserRepository {
     ]);
 
     return {
-      items: items.map(doc => this.toEntity(doc)),
+      items: items.map(doc => UserMapper.toResponse(this.toEntity(doc))),
       total,
     };
   }

@@ -239,6 +239,7 @@ export class UserResponseDto {
   phoneNumber: string;
   email: string;
   bio: string;
+  avatar: string;
   social: SocialLinkDto[];
   location: LocationDto;
   createdAt: Date;

@@ -13,6 +13,7 @@ export class UserMapper {
       location: user.location,
       bio: user.bio,
       social: user.socials,
+      avatar: user.avatar,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
