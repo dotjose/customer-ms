@@ -65,6 +65,7 @@ export class IncrementViewHandler
       const newCount = await this.repository.incrementViewCount(
         entityType,
         new ObjectId(listingId),
+        clientIp,
       );
 
       // Record successful increment

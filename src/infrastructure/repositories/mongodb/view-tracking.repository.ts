@@ -28,18 +28,33 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
   async incrementViewCount(
     entityType: EntityType,
     listingId: ObjectId,
+    clientIp?: string,
   ): Promise<number> {
+    const now = new Date();
+    const hourKey = `metadata.hourlyBreakdown.${now.getHours()}`;
+    const dayKey = `metadata.dailyBreakdown.${now.toISOString().split('T')[0]}`;
+
+    const update: any = {
+      $inc: {
+        viewCount: 1,
+        [hourKey]: 1,
+        [dayKey]: 1,
+      },
+      $set: { lastViewedAt: now },
+      $setOnInsert: {
+        entityType,
+        listingId,
+        createdAt: now,
+      },
+    };
+
+    if (clientIp) {
+      update.$addToSet = { 'metadata.uniqueViewers': clientIp };
+    }
+
     const result = await this.model.findOneAndUpdate(
       { entityType, listingId },
-      {
-        $inc: { viewCount: 1 },
-        $set: { lastViewedAt: new Date() },
-        $setOnInsert: {
-          entityType,
-          listingId,
-          createdAt: new Date(),
-        },
-      },
+      update,
       {
         upsert: true,
         new: true, // Return updated document

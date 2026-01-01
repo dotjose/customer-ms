@@ -7,7 +7,9 @@ import {
   Max,
   IsArray,
   IsOptional,
+  IsMongoId,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EntityType, ENTITY_TYPES } from 'domain/view-tracking/entity-type.enum';
 
@@ -21,6 +23,7 @@ export class IncrementViewDto {
     example: 'product',
   })
   @IsEnum(EntityType)
+  @Transform(({ value }) => value?.toLowerCase())
   @IsNotEmpty()
   entityType: EntityType;
 
@@ -29,6 +32,7 @@ export class IncrementViewDto {
     example: '507f1f77bcf86cd799439011',
   })
   @IsString()
+  @IsMongoId()
   @IsNotEmpty()
   listingId: string;
 }
@@ -43,6 +47,7 @@ export class GetViewCountDto {
     example: 'product',
   })
   @IsEnum(EntityType)
+  @Transform(({ value }) => value?.toLowerCase())
   @IsNotEmpty()
   entityType: EntityType;
 
@@ -51,6 +56,7 @@ export class GetViewCountDto {
     example: '507f1f77bcf86cd799439011',
   })
   @IsString()
+  @IsMongoId()
   @IsNotEmpty()
   listingId: string;
 }
@@ -65,6 +71,7 @@ export class GetBulkViewCountsDto {
     example: 'product',
   })
   @IsEnum(EntityType)
+  @Transform(({ value }) => value?.toLowerCase())
   @IsNotEmpty()
   entityType: EntityType;
 
@@ -75,6 +82,7 @@ export class GetBulkViewCountsDto {
   })
   @IsArray()
   @IsString({ each: true })
+  @IsMongoId({ each: true })
   @IsNotEmpty({ each: true })
   listingIds: string[];
 }
@@ -103,6 +111,7 @@ export class GetTrendingDto {
   })
   @IsOptional()
   @IsEnum(EntityType)
+  @Transform(({ value }) => value?.toLowerCase())
   entityType?: EntityType;
 }
 

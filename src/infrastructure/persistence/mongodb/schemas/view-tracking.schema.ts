@@ -8,7 +8,7 @@ import { ObjectId } from 'mongodb';
  */
 @Schema({ collection: 'view_tracking', timestamps: true })
 export class ViewTrackingDocument extends Document {
-  @Prop({ required: true, enum: ['product', 'realestate', 'job', 'professional', 'event'] })
+  @Prop({ required: true, enum: ['product', 'realestate', 'job', 'professional', 'event'], type: String })
   entityType: string;
 
   @Prop({ required: true, type: 'ObjectId' })

@@ -15,6 +15,7 @@ export interface ViewTrackingRepository {
   incrementViewCount(
     entityType: EntityType,
     listingId: ObjectId,
+    clientIp?: string,
   ): Promise<number>;
 
   /**
