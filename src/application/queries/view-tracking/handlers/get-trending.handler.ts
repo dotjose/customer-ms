@@ -55,7 +55,7 @@ export class GetTrendingHandler
       // Map to DTOs with trending scores
       const results: TrendingListingDto[] = viewTrackings.map((vt) => ({
         entityType: vt.entityType,
-        listingId: vt.listingId.toString(),
+        listingId: vt.listingId,
         viewCount: vt.viewCount,
         trendingScore: vt.getTrendingScore(),
         lastViewedAt: vt.lastViewedAt,

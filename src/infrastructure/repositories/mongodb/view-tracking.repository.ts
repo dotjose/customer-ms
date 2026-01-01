@@ -27,7 +27,7 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
    */
   async incrementViewCount(
     entityType: EntityType,
-    listingId: ObjectId,
+    listingId: string,
     clientIp?: string,
   ): Promise<number> {
     const now = new Date();
@@ -52,17 +52,13 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
       update.$addToSet = { 'metadata.uniqueViewers': clientIp };
     }
 
-    const result = await this.model.findOneAndUpdate(
-      { entityType, listingId },
+    const result = await this.findOneAndUpdateByListingIdPreferString(
+      entityType,
+      listingId,
       update,
-      {
-        upsert: true,
-        new: true, // Return updated document
-        runValidators: true,
-      },
     );
 
-    return result.viewCount;
+    return result?.viewCount || 0;
   }
 
   /**
@@ -70,13 +66,9 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
    */
   async getViewCount(
     entityType: EntityType,
-    listingId: ObjectId,
+    listingId: string,
   ): Promise<number> {
-    const doc = await this.model
-      .findOne({ entityType, listingId })
-      .select('viewCount')
-      .lean();
-
+    const doc = await this.findOneByListingIdPreferString(entityType, listingId);
     return doc?.viewCount || 0;
   }
 
@@ -85,9 +77,9 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
    */
   async findByEntityAndListing(
     entityType: EntityType,
-    listingId: ObjectId,
+    listingId: string,
   ): Promise<ViewTracking | null> {
-    const doc = await this.model.findOne({ entityType, listingId }).lean();
+    const doc = await this.findOneByListingIdPreferString(entityType, listingId);
 
     if (!doc) {
       return null;
@@ -121,28 +113,46 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
    */
   async getBulkViewCounts(
     entityType: EntityType,
-    listingIds: ObjectId[],
+    listingIds: string[],
   ): Promise<Map<string, number>> {
+    const requestedIds = listingIds.map((id) => (id == null ? '' : String(id)));
+    const safeRequestedIds = requestedIds.filter((id) => id.length > 0);
+
+    const objectIds = safeRequestedIds
+      .map((id) => this.tryParseObjectId(id))
+      .filter((id): id is ObjectId => id != null);
+
+    const inClause: any[] = [...new Set(safeRequestedIds)];
+    objectIds.forEach((oid) => inClause.push(oid));
+
     const docs = await this.model
       .find({
         entityType,
-        listingId: { $in: listingIds },
+        listingId: { $in: inClause },
       })
       .select('listingId viewCount')
       .lean();
 
     const result = new Map<string, number>();
 
-    // Add found documents
-    docs.forEach((doc) => {
-      result.set(doc.listingId.toString(), doc.viewCount);
+    // Add found documents. If both a string and an ObjectId version exist for the
+    // same hex string, prefer the string version deterministically.
+    docs.forEach((doc: any) => {
+      const key = doc.listingId == null ? '' : String(doc.listingId);
+      if (key.length === 0) {
+        return;
+      }
+
+      const isStringStored = typeof doc.listingId === 'string';
+      if (!result.has(key) || isStringStored) {
+        result.set(key, doc.viewCount);
+      }
     });
 
-    // Add missing IDs with count 0
-    listingIds.forEach((id) => {
-      const key = id.toString();
-      if (!result.has(key)) {
-        result.set(key, 0);
+    // Add missing IDs with count 0 (partial success)
+    safeRequestedIds.forEach((id) => {
+      if (!result.has(id)) {
+        result.set(id, 0);
       }
     });
 
@@ -202,7 +212,7 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
     return new ViewTracking(
       {
         entityType: doc.entityType as EntityType,
-        listingId: new ObjectId(doc.listingId),
+        listingId: doc.listingId == null ? '' : String(doc.listingId),
         viewCount: doc.viewCount,
         lastViewedAt: doc.lastViewedAt,
         metadata,
@@ -210,6 +220,83 @@ export class MongoViewTrackingRepository implements ViewTrackingRepository {
         updatedAt: doc.updatedAt,
       },
       new ObjectId(doc._id),
+    );
+  }
+
+  private tryParseObjectId(value: string): ObjectId | null {
+    if (!ObjectId.isValid(value)) {
+      return null;
+    }
+    try {
+      return new ObjectId(value);
+    } catch {
+      return null;
+    }
+  }
+
+  private async findOneByListingIdPreferString(entityType: EntityType, listingId: string) {
+    const stringDoc = await this.model
+      .findOne({ entityType, listingId })
+      .lean();
+
+    if (stringDoc) {
+      return stringDoc;
+    }
+
+    const objectId = this.tryParseObjectId(listingId);
+    if (!objectId) {
+      return null;
+    }
+
+    return this.model
+      .findOne({ entityType, listingId: objectId })
+      .lean();
+  }
+
+  private async findOneAndUpdateByListingIdPreferString(
+    entityType: EntityType,
+    listingId: string,
+    update: any,
+  ) {
+    const stringUpdated = await this.model.findOneAndUpdate(
+      { entityType, listingId },
+      update,
+      {
+        upsert: false,
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (stringUpdated) {
+      return stringUpdated;
+    }
+
+    const objectId = this.tryParseObjectId(listingId);
+    if (objectId) {
+      const objectUpdated = await this.model.findOneAndUpdate(
+        { entityType, listingId: objectId },
+        update,
+        {
+          upsert: false,
+          new: true,
+          runValidators: true,
+        },
+      );
+
+      if (objectUpdated) {
+        return objectUpdated;
+      }
+    }
+
+    return this.model.findOneAndUpdate(
+      { entityType, listingId },
+      update,
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+      },
     );
   }
 }

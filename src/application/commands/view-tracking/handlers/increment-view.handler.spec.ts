@@ -87,7 +87,7 @@ describe('IncrementViewHandler', () => {
     );
     expect(mockRepository.incrementViewCount).toHaveBeenCalledWith(
       command.entityType,
-      expect.any(ObjectId),
+      command.listingId,
       command.clientIp, // Updated signature verification
     );
     expect(mockBotDetectionService.recordView).toHaveBeenCalled();

@@ -6,7 +6,7 @@ import { ViewIncrementedEvent } from 'domain/events/view-incremented.event';
 
 export interface ViewTrackingProps {
   entityType: EntityType;
-  listingId: ObjectId;
+  listingId: string;
   viewCount: number;
   lastViewedAt: Date;
   metadata?: ViewMetadata;
@@ -36,7 +36,7 @@ export class ViewTracking extends AggregateRoot {
     return this.props.entityType;
   }
 
-  get listingId(): ObjectId {
+  get listingId(): string {
     return this.props.listingId;
   }
 
@@ -66,7 +66,7 @@ export class ViewTracking extends AggregateRoot {
       new ViewIncrementedEvent(
         this._id.toString(),
         this.props.entityType,
-        this.props.listingId.toString(),
+        this.props.listingId,
         this.props.viewCount,
         this.props.lastViewedAt,
       ),
@@ -121,7 +121,7 @@ export class ViewTracking extends AggregateRoot {
   /**
    * Factory method to create new ViewTracking instance
    */
-  static create(entityType: EntityType, listingId: ObjectId): ViewTracking {
+  static create(entityType: EntityType, listingId: string): ViewTracking {
     const now = new Date();
     return new ViewTracking({
       entityType,

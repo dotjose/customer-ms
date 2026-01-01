@@ -14,7 +14,7 @@ export interface ViewTrackingRepository {
    */
   incrementViewCount(
     entityType: EntityType,
-    listingId: ObjectId,
+    listingId: string,
     clientIp?: string,
   ): Promise<number>;
 
@@ -22,14 +22,14 @@ export interface ViewTrackingRepository {
    * Get current view count for a listing
    * @returns View count or 0 if not found
    */
-  getViewCount(entityType: EntityType, listingId: ObjectId): Promise<number>;
+  getViewCount(entityType: EntityType, listingId: string): Promise<number>;
 
   /**
    * Get view tracking entity by composite key
    */
   findByEntityAndListing(
     entityType: EntityType,
-    listingId: ObjectId,
+    listingId: string,
   ): Promise<ViewTracking | null>;
 
   /**
@@ -50,7 +50,7 @@ export interface ViewTrackingRepository {
    */
   getBulkViewCounts(
     entityType: EntityType,
-    listingIds: ObjectId[],
+    listingIds: string[],
   ): Promise<Map<string, number>>;
 
   /**

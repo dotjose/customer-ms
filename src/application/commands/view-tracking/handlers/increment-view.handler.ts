@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { Inject, Logger } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { ViewTrackingRepository } from 'domain/view-tracking/view-tracking.repository';
 import { MetricsService } from 'infrastructure/monitoring/metrics.service';
 import { BotDetectionService } from 'infrastructure/services/bot-detection.service';
@@ -57,14 +56,14 @@ export class IncrementViewHandler
         // Return current count without incrementing
         return await this.repository.getViewCount(
           entityType,
-          new ObjectId(listingId),
+          listingId,
         );
       }
 
       // Atomic increment
       const newCount = await this.repository.incrementViewCount(
         entityType,
-        new ObjectId(listingId),
+        listingId,
         clientIp,
       );
 
@@ -98,7 +97,7 @@ export class IncrementViewHandler
       try {
         return await this.repository.getViewCount(
           entityType,
-          new ObjectId(listingId),
+          listingId,
         );
       } catch (fallbackError) {
         this.logger.error(

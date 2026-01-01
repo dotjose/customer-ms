@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { ObjectId } from 'mongodb';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 /**
  * MongoDB schema for ViewTracking
@@ -11,8 +10,8 @@ export class ViewTrackingDocument extends Document {
   @Prop({ required: true, enum: ['product', 'realestate', 'job', 'professional', 'event'], type: String })
   entityType: string;
 
-  @Prop({ required: true, type: 'ObjectId' })
-  listingId: ObjectId;
+  @Prop({ required: true, type: MongooseSchema.Types.Mixed })
+  listingId: any;
 
   @Prop({ required: true, default: 0 })
   viewCount: number;

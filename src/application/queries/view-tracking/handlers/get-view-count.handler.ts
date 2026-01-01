@@ -1,6 +1,5 @@
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
 import { Inject, Logger } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { ViewTrackingRepository } from 'domain/view-tracking/view-tracking.repository';
 import { MetricsService } from 'infrastructure/monitoring/metrics.service';
 import { ViewTrackingCacheService } from 'infrastructure/services/view-tracking-cache.service';
@@ -45,7 +44,7 @@ export class GetViewCountHandler
       this.metricsService.incrementCounter('view_tracking.cache_miss');
       const count = await this.repository.getViewCount(
         entityType,
-        new ObjectId(listingId),
+        listingId,
       );
 
       // Cache the result
@@ -84,14 +83,25 @@ export class GetBulkViewCountsHandler
   ): Promise<Map<string, number>> {
     const { entityType, listingIds } = query;
 
+    const requestedIds = listingIds.map((id) => (id == null ? '' : String(id)));
+    const safeRequestedIds = requestedIds.filter((id) => id.length > 0);
+
     try {
       // Try to get all from cache first
-      const cachedResults = await this.cacheService.getBulkViewCounts(
-        entityType,
-        listingIds,
-      );
+      let cachedResults = new Map<string, number>();
+      try {
+        cachedResults = await this.cacheService.getBulkViewCounts(
+          entityType,
+          requestedIds,
+        );
+      } catch (cacheError) {
+        this.logger.error(
+          `Failed to fetch bulk view counts from cache: ${cacheError.message}`,
+          cacheError.stack,
+        );
+      }
 
-      const missingIds = listingIds.filter(
+      const missingIds = safeRequestedIds.filter(
         (id) => !cachedResults.has(id),
       );
 
@@ -102,16 +112,41 @@ export class GetBulkViewCountsHandler
 
       // Fetch missing from database
       this.metricsService.incrementCounter('view_tracking.bulk_cache_partial');
-      const dbResults = await this.repository.getBulkViewCounts(
-        entityType,
-        missingIds.map((id) => new ObjectId(id)),
-      );
+      let dbResults = new Map<string, number>();
+      try {
+        dbResults = await this.repository.getBulkViewCounts(
+          entityType,
+          missingIds.length > 0 ? missingIds : safeRequestedIds,
+        );
+      } catch (dbError) {
+        this.logger.error(
+          `Failed to fetch missing bulk view counts from DB: ${dbError.message}`,
+          dbError.stack,
+        );
+      }
 
       // Cache the missing results
-      await this.cacheService.setBulkViewCounts(entityType, dbResults);
+      try {
+        await this.cacheService.setBulkViewCounts(entityType, dbResults);
+      } catch (cacheSetError) {
+        this.logger.error(
+          `Failed to cache bulk view counts: ${cacheSetError.message}`,
+          cacheSetError.stack,
+        );
+      }
 
       // Merge cached and DB results
       const combined = new Map([...cachedResults, ...dbResults]);
+
+      // Ensure deterministic output includes all requested IDs
+      requestedIds.forEach((id) => {
+        if (id.length === 0) {
+          return;
+        }
+        if (!combined.has(id)) {
+          combined.set(id, 0);
+        }
+      });
 
       return combined;
     } catch (error) {
@@ -119,8 +154,16 @@ export class GetBulkViewCountsHandler
         `Failed to get bulk view counts: ${error.message}`,
         error.stack,
       );
-      // Return empty map on error
-      return new Map();
+
+      const fallback = new Map<string, number>();
+      requestedIds.forEach((id) => {
+        if (id.length === 0) {
+          return;
+        }
+        fallback.set(id, 0);
+      });
+
+      return fallback;
     }
   }
 }
