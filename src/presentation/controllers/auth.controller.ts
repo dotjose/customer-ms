@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Put } from "@nestjs/common";
+import { Controller, Post, Body, Get, Param, Put, HttpCode, HttpStatus } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
   ApiTags,
@@ -60,6 +60,7 @@ export class AuthController {
   }
 
   @Post("forgot-password")
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Request password reset" })
   @ApiResponse({ status: 200, description: "Password reset email sent" })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {

@@ -102,6 +102,7 @@ import { BotDetectionService } from "./infrastructure/services/bot-detection.ser
 import { SuperAdminSeeder } from "./infrastructure/seeder/super-admin.seeder";
 import { JwtAuthGuard } from "./infrastructure/guards/jwt-auth.guard";
 import { RolesGuard } from "./infrastructure/guards/roles.guard";
+import { UserSecurityService } from "domain/user/services/user-security.service";
 
 // Repositories
 import { MongoUserRepository } from "./infrastructure/repositories/mongodb/user.repository";
@@ -209,6 +210,7 @@ const services = [
   ViewTrackingCacheService,
   BotDetectionService,
   SuperAdminSeeder,
+  UserSecurityService,
 ];
 
 @Module({
@@ -331,6 +333,10 @@ const services = [
     {
       provide: "AdminRepository",
       useClass: MongoAdminRepository,
+    },
+    {
+      provide: "IPasswordHasher",
+      useClass: HashService,
     },
 
     // Handlers and Services

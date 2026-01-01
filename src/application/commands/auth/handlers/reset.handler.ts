@@ -2,7 +2,8 @@ import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
 import { BadRequestException, Inject, Logger } from "@nestjs/common";
 
 import { UserRepository } from "domain/user/user.repository";
-import { HashService } from "infrastructure/services/hash.service";
+import { UserSecurityService } from "domain/user/services/user-security.service";
+import { IPasswordHasher } from "domain/user/interfaces/password-hasher.interface";
 import { PasswordResetCompletedEvent } from "application/events/user/password-reset-completed.event";
 import { ResetPasswordCommand } from "../reset-password.command";
 
@@ -14,8 +15,9 @@ export class ResetPasswordHandler
 
   constructor(
     @Inject("UserRepository") private readonly userRepository: UserRepository,
-    private readonly hashService: HashService,
-    private readonly eventBus: EventBus
+    @Inject("IPasswordHasher") private readonly hasher: IPasswordHasher,
+    private readonly eventBus: EventBus,
+    private readonly userSecurityService: UserSecurityService
   ) {}
 
   async execute(command: ResetPasswordCommand) {
@@ -24,15 +26,21 @@ export class ResetPasswordHandler
       timestamp: new Date().toISOString(),
     });
 
+    // 1. Find User by Token
     const user = await this.userRepository.findValidToken(command.token);
 
     if (!user) {
-      this.logger.warn("Invalid or expired reset token", { token: "masked" });
+      this.logger.warn("Invalid or expired reset token");
       throw new BadRequestException("Invalid or expired reset token");
     }
 
+    // 2. Security Check: Ensure User is Active
+    // This blocks Suspended/Banned users from resetting even with a valid token
+    this.userSecurityService.validatePasswordReset(user);
+
     try {
-      const hashedPassword = await this.hashService.hash(command.newPassword);
+      // 3. Update Password
+      const hashedPassword = await this.hasher.hash(command.newPassword);
 
       user.updatePassword(hashedPassword);
       await this.userRepository.save(user);
@@ -41,18 +49,13 @@ export class ResetPasswordHandler
         new PasswordResetCompletedEvent("Password reset completed", user.email)
       );
 
-      this.logger.log("Password reset successfully completed", {
-        userId: user.id,
-        email: user.email,
-        timestamp: new Date().toISOString(),
-      });
+      this.logger.log(`Password reset successfully completed for user: ${user.id}`);
 
       return { message: "Password successfully reset" };
     } catch (error) {
       this.logger.error("Error during password reset", {
         userId: user?.id,
-        email: user?.email,
-        error,
+        error: error.message,
       });
       throw error;
     }
