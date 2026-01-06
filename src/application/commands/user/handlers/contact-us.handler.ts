@@ -30,7 +30,7 @@ export class ContactUsHandler implements ICommandHandler<ContactUsCommand> {
         Body: { Html: { Data: emailHtml } },
         Subject: { Data: `📩 New Contact Us Message from ${name}` },
       },
-      Source: email,
+      Source: process.env.SUPPORT_EMAIL,
       ReplyToAddresses: [email],
     });
 
