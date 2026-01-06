@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { UserDocument } from "../../persistence/mongodb/schemas/user.schema";
+import { UserDocument } from "infrastructure/persistence/mongodb/schemas/user.schema";
 import { User } from "domain/user/user.entity";
 import { UserRepository } from "domain/user/user.repository";
 import { UserResponseDto } from "presentation/dtos/auth.dto";
@@ -79,8 +79,7 @@ export class MongoUserRepository implements UserRepository {
   async findAll(query: any): Promise<{ items: UserResponseDto[]; total: number }> {
     const { offset = 0, limit = 10, search = "", status, role } = query;
     const filter: any = {
-      roles: { $ne: "ADMIN" },
-      isVerified: true
+      roles: { $ne: "ADMIN" }
     };
     
     if (search) {
