@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, Logger } from '@nestjs/common';
 import { ViewTrackingRepository } from 'domain/view-tracking/view-tracking.repository';
 import { MetricsService } from 'infrastructure/monitoring/metrics.service';

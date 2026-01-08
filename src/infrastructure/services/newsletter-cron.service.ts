@@ -222,7 +222,7 @@ export class NewsletterCronService {
           "https://web.facebook.com/profile.php?id=61580206130872&mibextid=wwXIfr&rdid=d3D8RRococHd8yrA&share_url=https%3A%2F%2Fweb.facebook.com%2Fshare%2F1A8A6RoiUN%2F%3Fmibextid%3DwwXIfr%26ref%3Dwaios.fb_links_xma_control%26_rdc%3D1%26_rdr",
         tiktok_url:
           "https://www.tiktok.com/@habeshanetwork?_r=1&_t=ZT-92AXXvMwbYt",
-        instagram_url: "https://www.instagram.com/habeshanetwork",
+        instagram_url: "https://www.instagram.com/yehabeshanetwork",
         company_address: "Lavon, TX 75166, USA",
         contact_email: "support@habeshanetwork.com",
         contact_phone: "+1 (855) 553-7873",
@@ -289,7 +289,8 @@ export class NewsletterCronService {
 
   private getFallbackData() {
     return {
-      logo_url: "https://habeshanetwork.com/logo.png",
+      logo_url:
+        "https://z-p3-scontent.fadd2-1.fna.fbcdn.net/v/t39.30808-6/558149099_122108114529006871_2798763732220282222_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeH5K3WizsR-i1xpz6OMWBVmtoqt33cWQri2iq3fdxZCuKmkxtlrdEoTlMUa2qAxc-fZxiqWL5cxPAxZz6y_0D5Z&_nc_ohc=S34oWHJUo-AQ7kNvwH9-bmq&_nc_oc=Adljb-EwJ1NJrhO0LSD7Bn9ZLqqy5jDpnOfZjbDPrKpQuQtlVdS3EqJrKnqr1SigXTc&_nc_zt=23&_nc_ht=z-p3-scontent.fadd2-1.fna&_nc_gid=l9mj9zux1rnZ797bA6aq1Q&oh=00_Afmnq0DUbFoG9wtVOrc5i9GiOl5qHpUPtaSnLtLAacbA0g&oe=695091A4",
       tagline: "Your community marketplace & network",
       hero_image_url: "https://habeshanetwork.com/hero.jpg",
       hero_title: "Explore the Best of Habesha Network",
@@ -304,7 +305,7 @@ export class NewsletterCronService {
         "https://web.facebook.com/profile.php?id=61580206130872&mibextid=wwXIfr&rdid=d3D8RRococHd8yrA&share_url=https%3A%2F%2Fweb.facebook.com%2Fshare%2F1A8A6RoiUN%2F%3Fmibextid%3DwwXIfr%26ref%3Dwaios.fb_links_xma_control%26_rdc%3D1%26_rdr",
       tiktok_url:
         "https://www.tiktok.com/@habeshanetwork?_r=1&_t=ZT-92AXXvMwbYt",
-      instagram_url: "https://www.instagram.com/habeshanetwork",
+      instagram_url: "https://www.instagram.com/yehabeshanetwork",
       linkedin_url: "#",
       company_address: "Lavon, TX 75166, USA",
       contact_email: "support@habeshanetwork.com",
