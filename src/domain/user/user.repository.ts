@@ -9,4 +9,13 @@ export interface UserRepository {
   save(user: User): Promise<UserResponseDto>;
   delete(id: string): Promise<void>;
   findAll(query: any): Promise<{ items: UserResponseDto[]; total: number }>;
+  getPlatformStats(): Promise<UserPlatformStats>;
+}
+
+export interface UserPlatformStats {
+  total: number;
+  active: number;
+  suspended: number;
+  banned: number;
+  blocked: number;
 }

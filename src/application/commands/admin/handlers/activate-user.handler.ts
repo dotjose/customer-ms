@@ -3,11 +3,14 @@ import { ActivateUserCommand } from "../admin.commands";
 import { UserRepository } from "domain/user/user.repository";
 import { Inject, NotFoundException } from "@nestjs/common";
 
+import { RedisService } from "infrastructure/services/redis.service";
+
 @CommandHandler(ActivateUserCommand)
 export class ActivateUserHandler implements ICommandHandler<ActivateUserCommand> {
   constructor(
     @Inject("UserRepository")
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
+    private readonly redisService: RedisService
   ) {}
 
   async execute(command: ActivateUserCommand): Promise<void> {
@@ -17,5 +20,6 @@ export class ActivateUserHandler implements ICommandHandler<ActivateUserCommand>
 
     user.activate();
     await this.userRepository.save(user);
+    await this.redisService.del('stats:user-mss:platform');
   }
 }

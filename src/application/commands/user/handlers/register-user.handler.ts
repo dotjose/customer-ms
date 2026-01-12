@@ -7,6 +7,7 @@ import { UserRegisteredEvent } from "application/events/user/user-registered.eve
 import { HashService } from "infrastructure/services/hash.service";
 import { UserRepository } from "domain/user/user.repository";
 import { UserResponseDto } from "presentation/dtos/auth.dto";
+import { RedisService } from "infrastructure/services/redis.service";
 
 @CommandHandler(RegisterUserCommand)
 export class RegisterUserHandler
@@ -17,7 +18,8 @@ export class RegisterUserHandler
   constructor(
     @Inject("UserRepository") private readonly userRepository: UserRepository,
     private readonly hashService: HashService,
-    private readonly eventBus: EventBus
+    private readonly eventBus: EventBus,
+    private readonly redisService: RedisService
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<UserResponseDto> {
@@ -76,6 +78,9 @@ export class RegisterUserHandler
         userId: user.id,
         timestamp: new Date().toISOString(),
       });
+
+      // Invalidate platform stats cache
+      await this.redisService.del('stats:user-mss:platform');
 
       return res;
     } catch (error: any) {

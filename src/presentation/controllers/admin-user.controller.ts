@@ -13,7 +13,7 @@ import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { RolesGuard } from "infrastructure/guards/roles.guard";
 import { Roles } from "infrastructure/decorators/roles.decorator";
-import { JwtAuthGuard } from "infrastructure/guards/jwt-auth.guard"; // Assuming this exists or using existing JwtGuard logic
+import { JwtAuthGuard } from "infrastructure/guards/jwt-auth.guard";
 import {
   CreateAdminDto,
   UpdateAdminDto,
@@ -33,6 +33,7 @@ import {
   GetUserByIdQuery,
   GetAdminsQuery,
   GetAdminByIdQuery,
+  GetPlatformStatsQuery,
 } from "application/queries/admin/admin.queries";
 
 @ApiTags("Admin Management")
@@ -78,6 +79,12 @@ export class AdminUserController {
   }
 
   // Users Management
+  @Get("customers/stats")
+  @ApiOperation({ summary: "Get platform user stats" })
+  async getPlatformStats() {
+    return this.queryBus.execute(new GetPlatformStatsQuery());
+  }
+
   @Get("customers")
   @ApiOperation({ summary: "Get all customers (paginated/filtered)" })
   async getCustomers(@Query() query: UserSearchDto) {

@@ -3,11 +3,14 @@ import { BanUserCommand } from "../admin.commands";
 import { UserRepository } from "domain/user/user.repository";
 import { Inject, NotFoundException, BadRequestException } from "@nestjs/common";
 
+import { RedisService } from "infrastructure/services/redis.service";
+
 @CommandHandler(BanUserCommand)
 export class BanUserHandler implements ICommandHandler<BanUserCommand> {
   constructor(
     @Inject("UserRepository")
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
+    private readonly redisService: RedisService
   ) {}
 
   async execute(command: BanUserCommand): Promise<void> {
@@ -18,6 +21,7 @@ export class BanUserHandler implements ICommandHandler<BanUserCommand> {
     try {
       user.ban();
       await this.userRepository.save(user);
+      await this.redisService.del('stats:user-mss:platform');
     } catch (error) {
       throw new BadRequestException(error.message);
     }

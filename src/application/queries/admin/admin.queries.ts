@@ -34,3 +34,5 @@ export class SearchUserFeedbackQuery implements IQuery {
     public readonly userId?: string
   ) {}
 }
+
+export * from "./get-platform-stats.query";

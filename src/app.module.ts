@@ -66,6 +66,7 @@ import { GetUserByIdHandler } from "./application/queries/admin/handlers/get-use
 import { GetAdminsHandler } from "./application/queries/admin/handlers/get-admins.handler";
 import { GetAdminByIdHandler } from "./application/queries/admin/handlers/get-admin-by-id.handler";
 import { SearchUserFeedbackHandler } from "./application/queries/admin/handlers/search-user-feedback.handler";
+import { GetPlatformStatsHandler } from "./application/queries/admin/handlers/get-platform-stats.handler";
 
 // Event Handlers
 import { UserRegisteredHandler } from "./application/events/user/handlers/user-registered.handler";
@@ -176,6 +177,7 @@ const queryHandlers = [
   GetAdminsHandler,
   GetAdminByIdHandler,
   SearchUserFeedbackHandler,
+  GetPlatformStatsHandler,
 ];
 
 const eventHandlers = [

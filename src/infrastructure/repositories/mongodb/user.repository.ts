@@ -3,7 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { UserDocument } from "infrastructure/persistence/mongodb/schemas/user.schema";
 import { User } from "domain/user/user.entity";
-import { UserRepository } from "domain/user/user.repository";
+import { UserRepository, UserPlatformStats } from "domain/user/user.repository";
 import { UserResponseDto } from "presentation/dtos/auth.dto";
 import { UserMapper } from "infrastructure/mappers/user.mapper";
 
@@ -102,6 +102,25 @@ export class MongoUserRepository implements UserRepository {
     return {
       items: items.map(doc => UserMapper.toResponse(this.toEntity(doc))),
       total,
+    };
+  }
+
+  async getPlatformStats(): Promise<UserPlatformStats> {
+    const filter = { roles: { $ne: "ADMIN" } };
+    const [total, active, suspended, banned, blocked] = await Promise.all([
+      this.userModel.countDocuments(filter).exec(),
+      this.userModel.countDocuments({ ...filter, status: "ACTIVE" }).exec(),
+      this.userModel.countDocuments({ ...filter, status: "SUSPENDED" }).exec(),
+      this.userModel.countDocuments({ ...filter, status: "BANNED" }).exec(),
+      this.userModel.countDocuments({ ...filter, status: "BLOCKED" }).exec(),
+    ]);
+
+    return {
+      total,
+      active,
+      suspended,
+      banned,
+      blocked,
     };
   }
 
