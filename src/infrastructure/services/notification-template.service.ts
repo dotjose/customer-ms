@@ -160,7 +160,667 @@ export class NotificationTemplateService {
     return `Your verification code is ${token}. It will expire in 5 minutes. Welcome to Our Platform!`;
   }
 
+ getNewsLetterTemplate(preferences_url: string, unsubscribe_url: string, current_year: string): string {
+    return `<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Welcome to Habesha Network!</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        /* Modern Button Styles */
+        .feature-button {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .feature-button a {
+            display: block !important;
+            width: 100% !important;
+            padding: 14px 20px !important;
+            background-color: #0047AB !important;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            border-radius: 8px !important;
+            text-align: center !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        /* Hover effect for desktop */
+        .feature-button a:hover {
+            background-color: #0066CC !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0, 71, 171, 0.25) !important;
+        }
+
+        a[style*="background: linear-gradient(135deg, #0047AB"]:hover {
+            background: linear-gradient(135deg, #0066CC 0%, #0088FF 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 12px rgba(0, 71, 171, 0.25) !important;
+        }
+
+
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+
+            .mobile-padding {
+                padding: 10px !important;
+            }
+
+            .mobile-font {
+                font-size: 14px !important;
+            }
+
+            .mobile-hidden {
+                display: none !important;
+            }
+
+            .stack {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .feature-grid td {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 0 20px 0 !important;
+            }
+
+            .feature-grid tr {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .feature-grid td[width="50%"] {
+                width: 100% !important;
+                padding: 0 0 20px 0 !important;
+            }
+
+            .feature-button {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .feature-button a {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                text-align: center !important;
+            }
+
+            .social-links img {
+                width: 20px !important;
+            }
+
+            /* Feature grid adjustments */
+            .feature-grid td[width="50%"] {
+                width: 100% !important;
+                padding: 0 0 20px 0 !important;
+                display: block !important;
+            }
+
+            /* Feature card spacing */
+            .feature-grid td[style*="padding:0 10px"] {
+                padding: 0 !important;
+                margin-bottom: 20px !important;
+            }
+
+            /* Feature card content */
+            td[style*="padding:30px 20px 25px"] {
+                padding: 25px 18px 20px !important;
+            }
+
+            /* Button sizing */
+            a[style*="min-width: 160px"] {
+                min-width: 140px !important;
+                padding: 14px 20px !important;
+                display: block !important;
+                margin: 0 auto !important;
+            }
+
+            /* Icon container */
+            div[style*="width: 60px; height: 60px"] {
+                width: 50px !important;
+                height: 50px !important;
+                margin-bottom: 15px !important;
+            }
+
+            /* Icon size */
+            div[style*="font-size: 28px"] {
+                font-size: 22px !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+    <table role="presentation" style="width: 100%; background-color: #f4f4f4;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center" style="padding: 0;">
+                <!-- Main Container -->
+                <table role="presentation" class="container"
+                    style="width: 600px; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                    cellpadding="0" cellspacing="0">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #0047AB; padding: 30px 20px; text-align: center;">
+                            <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <img src="https://z-p3-scontent.fadd2-1.fna.fbcdn.net/v/t39.30808-6/558149099_122108114529006871_2798763732220282222_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeH5K3WizsR-i1xpz6OMWBVmtoqt33cWQri2iq3fdxZCuKmkxtlrdEoTlMUa2qAxc-fZxiqWL5cxPAxZz6y_0D5Z&_nc_ohc=S34oWHJUo-AQ7kNvwH9-bmq&_nc_oc=Adljb-EwJ1NJrhO0LSD7Bn9ZLqqy5jDpnOfZjbDPrKpQuQtlVdS3EqJrKnqr1SigXTc&_nc_zt=23&_nc_ht=z-p3-scontent.fadd2-1.fna&_nc_gid=l9mj9zux1rnZ797bA6aq1Q&oh=00_Afmnq0DUbFoG9wtVOrc5i9GiOl5qHpUPtaSnLtLAacbA0g&oe=695091A4"
+                                            alt="Habesha Network"
+                                            style="width: 80px; height: 80px; display: block; margin: 0 auto 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); border-radius: 50%; background: #fff; padding: 5px;">
+                                        <h1
+                                            style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                                            Habesha Network</h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Hero Section -->
+                    <tr>
+                        <td style="padding: 40px 20px; background-color: #f9f9f9; text-align: center;">
+                            <h2 style="margin: 0 0 15px; color: #1a1a1a; font-size: 28px; font-weight: 700;">Welcome!
+                            </h2>
+                            <p style="margin: 0; color: #666666; font-size: 16px; line-height: 1.6;">We're thrilled to
+                                have you join our community. Get ready to discover amazing products, job opportunities,
+                                connect with professionals, and stay updated with community events.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Getting Started Checklist -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px;">
+                            <h2
+                                style="margin: 0 0 30px; color: #1a1a1a; font-size: 24px; font-weight: 700; border-bottom: 3px solid #0047AB; padding-bottom: 10px; display: inline-block;">
+                                Get Started in 3 Steps</h2>
+
+                            <!-- Step 1 -->
+                            <table role="presentation"
+                                style="width: 100%; margin-bottom: 20px; background-color: #E8F0FF; border-radius: 8px; border-left: 4px solid #0047AB;"
+                                cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width: 50px; vertical-align: top;">
+                                                    <div
+                                                        style="width: 40px; height: 40px; background-color: #0047AB; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; font-weight: 700; line-height: 40px; text-align: center;">
+                                                        1</div>
+                                                </td>
+                                                <td style="vertical-align: top; padding-left: 15px;">
+                                                    <h3
+                                                        style="margin: 0 0 8px; color: #1a1a1a; font-size: 18px; font-weight: 600;">
+                                                        Complete Your Profile</h3>
+                                                    <p
+                                                        style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                                                        Add a profile photo, bio, and interests so the community gets to
+                                                        know you better.</p>
+                                                    <table role="presentation" cellpadding="0" cellspacing="0"
+                                                        style="margin-top: 15px;">
+                                                        <tr>
+                                                            <td style="border-radius: 5px; background-color: #0047AB;">
+                                                                <a href="https://www.habeshanetwork.com/dashboard/user-settings"
+                                                                    style="display: inline-block; padding: 10px 20px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 5px;">Complete
+                                                                    Profile</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Step 2 -->
+                            <table role="presentation"
+                                style="width: 100%; margin-bottom: 20px; background-color: #E8F0FF; border-radius: 8px; border-left: 4px solid #0047AB;"
+                                cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width: 50px; vertical-align: top;">
+                                                    <div
+                                                        style="width: 40px; height: 40px; background-color: #0047AB; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; font-weight: 700; line-height: 40px; text-align: center;">
+                                                        2</div>
+                                                </td>
+                                                <td style="vertical-align: top; padding-left: 15px;">
+                                                    <h3
+                                                        style="margin: 0 0 8px; color: #1a1a1a; font-size: 18px; font-weight: 600;">
+                                                        Set Your Preferences</h3>
+                                                    <p
+                                                        style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                                                        Choose which updates you want to receive: jobs, products,
+                                                        events, or community news.</p>
+                                                    <table role="presentation" cellpadding="0" cellspacing="0"
+                                                        style="margin-top: 15px;">
+                                                        <tr>
+                                                            <td style="border-radius: 5px; background-color: #0047AB;">
+                                                                <a href="${preferences_url}"
+                                                                    style="display: inline-block; padding: 10px 20px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 5px;">Set
+                                                                    Preferences</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Step 3 -->
+                            <table role="presentation"
+                                style="width: 100%; margin-bottom: 20px; background-color: #E8F0FF; border-radius: 8px; border-left: 4px solid #0047AB;"
+                                cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width: 50px; vertical-align: top;">
+                                                    <div
+                                                        style="width: 40px; height: 40px; background-color: #0047AB; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; font-weight: 700; line-height: 40px; text-align: center;">
+                                                        3</div>
+                                                </td>
+                                                <td style="vertical-align: top; padding-left: 15px;">
+                                                    <h3
+                                                        style="margin: 0 0 8px; color: #1a1a1a; font-size: 18px; font-weight: 600;">
+                                                        Start Exploring</h3>
+                                                    <p
+                                                        style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                                                        Browse our marketplace, discover job opportunities, and connect
+                                                        with professionals in your field.</p>
+                                                    <table role="presentation" cellpadding="0" cellspacing="0"
+                                                        style="margin-top: 15px;">
+                                                        <tr>
+                                                            <td style="border-radius: 5px; background-color: #0047AB;">
+                                                                <a href="https://www.habeshanetwork.com"
+                                                                    style="display: inline-block; padding: 10px 20px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 5px;">Start
+                                                                    Exploring</a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Features Overview -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 0 40px 40px; background-color: #f9f9f9;">
+                            <h2
+                                style="margin: 0 0 30px; padding-top: 40px; color: #1a1a1a; font-size: 24px; font-weight: 700; border-bottom: 3px solid #0047AB; padding-bottom: 10px; display: inline-block;">
+                                Explore What's Available</h2>
+
+                            <table role="presentation" class="feature-grid" width="100%" cellpadding="0" cellspacing="0"
+                                style="border-collapse: separate; border-spacing: 0 20px;">
+                                <!-- Row 1 -->
+                                <tr>
+                                    <!-- Feature 1: Marketplace -->
+                                    <td width="50%" style="padding:0 10px 0 0; vertical-align: top;" class="stack">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                            style="background:#ffffff; border-radius:10px; border:1px solid #e5e5e5; box-shadow:0 4px 12px rgba(0,0,0,0.08); height: 100%;">
+                                            <tr>
+                                                <td align="center" style="padding:30px 20px 25px;">
+                                                    <div
+                                                        style="width: 60px; height: 60px; background: linear-gradient(135deg, #E8F0FF 0%, #ffffff 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid rgba(0,71,171,0.1);">
+                                                        <div style="font-size: 28px;">🛍️</div>
+                                                    </div>
+                                                    <h3
+                                                        style="margin:0 0 12px; color:#1a1a1a; font-size:18px; font-weight:700;">
+                                                        Marketplace</h3>
+                                                    <p
+                                                        style="margin:0 0 24px; color:#666666; font-size:14px; line-height:1.5; padding: 0 15px;">
+                                                        Discover unique products from local sellers, from handcrafted
+                                                        goods to everyday essentials.
+                                                    </p>
+
+                                                    <!-- Modern Button -->
+                                                    <table role="presentation" width="100%" cellpadding="0"
+                                                        cellspacing="0" style="margin:0 auto;">
+                                                        <tr>
+                                                            <td align="center">
+                                                                <a href="https://www.habeshanetwork.com/shop"
+                                                                    style="display: inline-block; min-width: 60px; padding:14px 28px; background: linear-gradient(135deg, #0047AB 0%, #0066CC 100%); color:#ffffff; text-decoration:none; font-size:15px; font-weight:700; border-radius:8px; text-align:center; border:none; box-shadow: 0 4px 6px rgba(0,71,171,0.15); transition: all 0.3s ease;">
+                                                                    Browse Marketplace
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+
+                                    <!-- Feature 2: Jobs -->
+                                    <td width="50%" style="padding:0 0 0 10px; vertical-align: top;" class="stack">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                            style="background:#ffffff; border-radius:10px; border:1px solid #e5e5e5; box-shadow:0 4px 12px rgba(0,0,0,0.08); height: 100%;">
+                                            <tr>
+                                                <td align="center" style="padding:30px 20px 25px;">
+                                                    <div
+                                                        style="width: 60px; height: 60px; background: linear-gradient(135deg, #E8F0FF 0%, #ffffff 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid rgba(0,71,171,0.1);">
+                                                        <div style="font-size: 28px;">💼</div>
+                                                    </div>
+                                                    <h3
+                                                        style="margin:0 0 12px; color:#1a1a1a; font-size:18px; font-weight:700;">
+                                                        Job Board</h3>
+                                                    <p
+                                                        style="margin:0 0 24px; color:#666666; font-size:14px; line-height:1.5; padding: 0 15px;">
+                                                        Find your next opportunity with job listings from local
+                                                        companies and startups.
+                                                    </p>
+
+                                                    <!-- Modern Button -->
+                                                    <table role="presentation" width="100%" cellpadding="0"
+                                                        cellspacing="0" style="margin:0 auto;">
+                                                        <tr>
+                                                            <td align="center">
+                                                                <a href="https://www.habeshanetwork.com/jobs"
+                                                                    style="display: inline-block; min-width: 60px; padding:14px 28px; background: linear-gradient(135deg, #0047AB 0%, #0066CC 100%); color:#ffffff; text-decoration:none; font-size:15px; font-weight:700; border-radius:8px; text-align:center; border:none; box-shadow: 0 4px 6px rgba(0,71,171,0.15); transition: all 0.3s ease;">
+                                                                    Search Jobs
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 2 -->
+                                <tr>
+                                    <!-- Feature 3: Professionals -->
+                                    <td width="50%" style="padding:0 10px 0 0; vertical-align: top;" class="stack">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                            style="background:#ffffff; border-radius:10px; border:1px solid #e5e5e5; box-shadow:0 4px 12px rgba(0,0,0,0.08); height: 100%;">
+                                            <tr>
+                                                <td align="center" style="padding:30px 20px 25px;">
+                                                    <div
+                                                        style="width: 60px; height: 60px; background: linear-gradient(135deg, #E8F0FF 0%, #ffffff 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid rgba(0,71,171,0.1);">
+                                                        <div style="font-size: 28px;">👥</div>
+                                                    </div>
+                                                    <h3
+                                                        style="margin:0 0 12px; color:#1a1a1a; font-size:18px; font-weight:700;">
+                                                        Professionals</h3>
+                                                    <p
+                                                        style="margin:0 0 24px; color:#666666; font-size:14px; line-height:1.5; padding: 0 15px;">
+                                                        Connect with skilled professionals and experts in your field for
+                                                        collaboration and growth.
+                                                    </p>
+
+                                                    <!-- Modern Button -->
+                                                    <table role="presentation" width="100%" cellpadding="0"
+                                                        cellspacing="0" style="margin:0 auto;">
+                                                        <tr>
+                                                            <td align="center">
+                                                                <a href="https://www.habeshanetwork.com/consultants"
+                                                                    style="display: inline-block; min-width: 60px; padding:14px 28px; background: linear-gradient(135deg, #0047AB 0%, #0066CC 100%); color:#ffffff; text-decoration:none; font-size:15px; font-weight:700; border-radius:8px; text-align:center; border:none; box-shadow: 0 4px 6px rgba(0,71,171,0.15); transition: all 0.3s ease;">
+                                                                    Connect Now
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+
+                                    <!-- Feature 4: Community -->
+                                    <td width="50%" style="padding:0 0 0 10px; vertical-align: top;" class="stack">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                            style="background:#ffffff; border-radius:10px; border:1px solid #e5e5e5; box-shadow:0 4px 12px rgba(0,0,0,0.08); height: 100%;">
+                                            <tr>
+                                                <td align="center" style="padding:30px 20px 25px;">
+                                                    <div
+                                                        style="width: 60px; height: 60px; background: linear-gradient(135deg, #E8F0FF 0%, #ffffff 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid rgba(0,71,171,0.1);">
+                                                        <div style="font-size: 28px;">🎉</div>
+                                                    </div>
+                                                    <h3
+                                                        style="margin:0 0 12px; color:#1a1a1a; font-size:18px; font-weight:700;">
+                                                        Events & News</h3>
+                                                    <p
+                                                        style="margin:0 0 24px; color:#666666; font-size:14px; line-height:1.5; padding: 0 15px;">
+                                                        Stay updated with community events, workshops, and inspiring
+                                                        stories from members.
+                                                    </p>
+
+                                                    <!-- Modern Button -->
+                                                    <table role="presentation" width="100%" cellpadding="0"
+                                                        cellspacing="0" style="margin:0 auto;">
+                                                        <tr>
+                                                            <td align="center">
+                                                                <a href="https://www.habeshanetwork.com/stories"
+                                                                    style="display: inline-block; min-width: 60px; padding:14px 28px; background: linear-gradient(135deg, #0047AB 0%, #0066CC 100%); color:#ffffff; text-decoration:none; font-size:15px; font-weight:700; border-radius:8px; text-align:center; border:none; box-shadow: 0 4px 6px rgba(0,71,171,0.15); transition: all 0.3s ease;">
+                                                                    View Events
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- FAQ / Quick Tips -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 40px;">
+                            <h2
+                                style="margin: 0 0 25px; color: #1a1a1a; font-size: 24px; font-weight: 700; border-bottom: 3px solid #0047AB; padding-bottom: 10px; display: inline-block;">
+                                Quick Tips</h2>
+
+                            <!-- Tip 1 -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 15px;" cellpadding="0"
+                                cellspacing="0">
+                                <tr>
+                                    <td style="vertical-align: top; padding-right: 15px; font-size: 20px;">💡</td>
+                                    <td style="vertical-align: top;">
+                                        <h3 style="margin: 0 0 5px; color: #1a1a1a; font-size: 16px; font-weight: 600;">
+                                            Personalize Your Feed</h3>
+                                        <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">Update
+                                            your interests in preferences to see more relevant products, jobs, and
+                                            professionals.</p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Tip 2 -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 15px;" cellpadding="0"
+                                cellspacing="0">
+                                <tr>
+                                    <td style="vertical-align: top; padding-right: 15px; font-size: 20px;">🔔</td>
+                                    <td style="vertical-align: top;">
+                                        <h3 style="margin: 0 0 5px; color: #1a1a1a; font-size: 16px; font-weight: 600;">
+                                            Enable Notifications</h3>
+                                        <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">Turn on
+                                            notifications to stay updated on new opportunities and messages from the
+                                            community.</p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Tip 3 -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 15px;" cellpadding="0"
+                                cellspacing="0">
+                                <tr>
+                                    <td style="vertical-align: top; padding-right: 15px; font-size: 20px;">🤝</td>
+                                    <td style="vertical-align: top;">
+                                        <h3 style="margin: 0 0 5px; color: #1a1a1a; font-size: 16px; font-weight: 600;">
+                                            Join the Community</h3>
+                                        <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">Attend
+                                            events, share your story, and connect with like-minded individuals.
+                                            Together, we're stronger.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- CTA Section -->
+                    <tr>
+                        <td
+                            style="padding: 40px; background: linear-gradient(135deg, #0047AB 0%, #0066CC 100%); text-align: center;">
+                            <h2 style="margin: 0 0 15px; color: #ffffff; font-size: 22px; font-weight: 700;">Ready to
+                                Get Started?</h2>
+                            <p style="margin: 0 0 25px; color: #E8F0FF; font-size: 16px; line-height: 1.6;">Log in to
+                                your account and begin your Habesha Network journey today.</p>
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="border-radius: 6px; background-color: #ffffff;">
+                                        <a href="https://www.habeshanetwork.com/auth/login"
+                                            style="display: inline-block; padding: 14px 40px; color: #0047AB; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">Log
+                                            In to Account</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Support Section -->
+                    <tr>
+                        <td class="mobile-padding"
+                            style="padding: 40px; background-color: #f9f9f9; text-align: center;">
+                            <h3 style="margin: 0 0 15px; color: #1a1a1a; font-size: 18px; font-weight: 600;">Need Help?
+                            </h3>
+                            <p style="margin: 0 0 15px; color: #666666; font-size: 14px; line-height: 1.6;">Check out
+                                our help center or reach out to our support team. We're here to help!</p>
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="padding: 0 10px;">
+                                        <a href="https://www.habeshanetwork.com/about"
+                                            style="color: #0047AB; text-decoration: underline; font-size: 14px; font-weight: 600;">Help
+                                            Center</a>
+                                    </td>
+                                    <td style="padding: 0 10px; color: #cccccc;">•</td>
+                                    <td style="padding: 0 10px;">
+                                        <a href="mailto:support@habeshanetwork.com"
+                                            style="color: #0047AB; text-decoration: underline; font-size: 14px; font-weight: 600;">Contact
+                                            Support</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 40px; background-color: #1a1a1a; text-align: center;">
+                            <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                        <!-- Social Links -->
+                                        <table role="presentation" style="margin: 0 auto 35px;" cellpadding="0"
+                                            cellspacing="0" class="social-links">
+                                            <tr>
+                                                <td style="padding: 0 12px;">
+                                                    <a href="https://www.facebook.com/HabeshaNetwork"
+                                                        style="text-decoration: none;">
+                                                        <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png"
+                                                            alt="Facebook" style="width: 24px; filter: invert(1);">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 12px;">
+                                                    <a href="https://www.instagram.com/yehabeshanetwork"
+                                                        style="text-decoration: none;">
+                                                        <img src="https://cdn-icons-png.flaticon.com/512/733/733558.png"
+                                                            alt="Instagram" style="width: 24px; filter: invert(1);">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 12px;">
+                                                    <a href="https://www.tiktok.com/@habeshanetwork"
+                                                        style="text-decoration: none;">
+                                                        <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png"
+                                                            alt="TikTok" style="width: 24px; filter: invert(1);">
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Contact Info -->
+                                        <p style="margin: 0 0 15px; color: #cccccc; font-size: 14px; line-height: 1.6;">
+                                            <strong style="color: #ffffff;">Habesha Network</strong><br>Lavon, TX 75166,
+                                            USA<br>
+                                            Email: <a href="mailto:support@habeshanetwork.com"
+                                                style="color: #0047AB; text-decoration: none;">support@habeshanetwork.com</a><br>
+                                            Phone: +1 (855) 553-7873
+                                        </p>
+
+                                        <!-- Footer Links -->
+                                        <table role="presentation" style="margin: 20px auto 0;" cellpadding="0"
+                                            cellspacing="0">
+                                            <tr>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://www.habeshanetwork.com/legal/terms"
+                                                        style="color: #0047AB; text-decoration: underline; font-size: 13px;">Terms</a>
+                                                </td>
+                                                <td style="padding: 0 10px; color: #666666;">|</td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://www.habeshanetwork.com/legal/privacy"
+                                                        style="color: #0047AB; text-decoration: underline; font-size: 13px;">Privacy</a>
+                                                </td>
+                                                <td style="padding: 0 10px; color: #666666;">|</td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="${unsubscribe_url}"
+                                                        style="color: #0047AB; text-decoration: underline; font-size: 13px;">Unsubscribe</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <p style="margin: 15px 0 0; color: #666666; font-size: 12px;">
+                                            © ${current_year} Habesha Network. All rights reserved.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <!-- End Main Container -->
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+}
 
   renderNewsletterContent(vars: Partial<NewsletterTemplateVars>): string {
     const {
@@ -174,7 +834,7 @@ export class NotificationTemplateService {
     const renderItem = (item: NewsletterItem, showPrice = true, ctaText = 'View Details') => {
       const isPlaceholder = item.image.includes('default') || !item.image.startsWith('http');
       const initials = item.title.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-      
+
       return `
         <table role="presentation" style="width: 100%; margin-bottom: 25px; background-color: #ffffff; border: 1px solid #eef2f6; border-radius: 12px; overflow: hidden; transition: all 0.3s ease;" cellpadding="0" cellspacing="0">
           <tr>
@@ -356,7 +1016,7 @@ export class NotificationTemplateService {
 <body style="margin: 0; padding: 0; background-color: #f8fafc;">
     <table role="presentation" style="width: 100%; background-color: #f8fafc;" cellpadding="0" cellspacing="0">
         <tr>
-            <td align="center" style="padding: 20px 0;">
+            <td align="center" style="padding: 0px 0;">
                 <!-- Main Container -->
                 <table role="presentation" class="container" style="width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
                     <!-- Hero Section (CSS-based) -->

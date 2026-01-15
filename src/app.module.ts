@@ -75,6 +75,7 @@ import { ConsultantProfileUpdatedHandler } from "./application/events/consultant
 import { ConsultantReviewedHandler } from "./application/events/consultant/handlers/consultant-reviewed.handler";
 import { PasswordResetRequestedHandler } from "application/events/user/handlers/password-reset-requested.handler";
 import { PasswordResetCompletedHandler } from "application/events/user/handlers/password-reset-complete.handler";
+import { NewsletterSubscribedHandler } from "application/events/user/handlers/newsletter-subscribed.handler";
 
 // Services
 import { HashService } from "./infrastructure/services/hash.service";
@@ -187,6 +188,7 @@ const eventHandlers = [
   ConsultantReviewedHandler,
   PasswordResetRequestedHandler,
   PasswordResetCompletedHandler,
+  NewsletterSubscribedHandler,
 ];
 
 const services = [
