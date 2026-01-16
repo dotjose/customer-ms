@@ -46,6 +46,8 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     // 4. Generate JWT token
     const token = await this.jwtService.generateToken(user);
+    user.markLoggedIn();
+    await this.userRepository.save(user);
     this.logger.log(`Login successful for user: ${user.id}`);
 
     // 5. Return minimal DTO

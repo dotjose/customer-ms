@@ -17,6 +17,8 @@ export class UserMapper {
       status: user.status,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      lastLogin: user.lastLogin,
+      verified: user.isVerified,
     });
   }
 

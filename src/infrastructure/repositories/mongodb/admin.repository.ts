@@ -34,7 +34,7 @@ export class MongoAdminRepository implements AdminRepository {
 
   async delete(id: string): Promise<void> {
     if (!Types.ObjectId.isValid(id)) return;
-    await this.adminModel.deleteOne({ _id: new Types.ObjectId(id), roles: "ADMIN" }).exec();
+    await this.adminModel.deleteOne({ _id: new Types.ObjectId(id) }).exec();
   }
 
   async findAll(query: any): Promise<{ items: Admin[]; total: number }> {

@@ -31,6 +31,9 @@ export class UserDocument extends Document {
   @Prop({ default: false })
   isVerified: boolean;
 
+  @Prop({ type: Date })
+  lastLogin?: Date;
+
   @Prop({ required: true, unique: true })
   phoneNumber: string;
 

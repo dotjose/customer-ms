@@ -245,6 +245,8 @@ export class UserResponseDto {
   status: string;
   createdAt: Date;
   updatedAt: Date;
+  verified: boolean;
+  lastLogin: Date;
 
   constructor(partial: Partial<UserResponseDto>) {
     Object.assign(this, partial);

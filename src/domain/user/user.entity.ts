@@ -43,6 +43,7 @@ export interface UserProps {
   };
   bio?: string;
   socialLinks?: SocialLink[];
+  lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -129,11 +130,20 @@ export class User extends AggregateRoot {
     return this.props.bio;
   }
 
+  get lastLogin(): Date {
+    return this.props.lastLogin;
+  }
+
   public verify(): void {
     this.props.isVerified = true;
     this.props.updatedAt = new Date();
     // You can emit domain events here
     // this.apply(new UserVerifiedEvent(this.id));
+  }
+
+  public markLoggedIn(): void {
+    this.props.lastLogin = new Date();
+    this.props.updatedAt = new Date();
   }
 
   public addRole(role: UserRole): void {
