@@ -17,8 +17,6 @@ async function bootstrap() {
 
     const configService = app.get(ConfigService);
     const logger = new Logger("Bootstrap");
-    
-    app.setGlobalPrefix("user-api");
 
     // Global Middleware
     setupMiddleware(app, configService);
