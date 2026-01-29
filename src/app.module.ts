@@ -76,6 +76,7 @@ import { ConsultantReviewedHandler } from "./application/events/consultant/handl
 import { PasswordResetRequestedHandler } from "application/events/user/handlers/password-reset-requested.handler";
 import { PasswordResetCompletedHandler } from "application/events/user/handlers/password-reset-complete.handler";
 import { NewsletterSubscribedHandler } from "application/events/user/handlers/newsletter-subscribed.handler";
+import { UserSuspendedHandler } from "application/events/user/handlers/user-suspended.handler";
 
 // Services
 import { HashService } from "./infrastructure/services/hash.service";
@@ -189,6 +190,7 @@ const eventHandlers = [
   PasswordResetRequestedHandler,
   PasswordResetCompletedHandler,
   NewsletterSubscribedHandler,
+  UserSuspendedHandler
 ];
 
 const services = [
@@ -357,7 +359,7 @@ export class AppModule implements OnModuleInit {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly superAdminSeeder: SuperAdminSeeder
-  ) {}
+  ) { }
 
   async onModuleInit() {
     // Sync indexes when the app starts

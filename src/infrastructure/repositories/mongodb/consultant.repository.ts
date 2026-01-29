@@ -12,9 +12,45 @@ import { PaginatedResultDTO } from "presentation/dtos/common.dto";
 export class MongoConsultantRepository implements ConsultantRepository {
   constructor(
     @InjectModel(ConsultantDocument.name)
-    private readonly consultantModel: Model<ConsultantDocument>
+    private readonly consultantModel: Model<ConsultantDocument>,
   ) { }
 
+  async removeUserFeedback(userId: string): Promise<Types.ObjectId[]> {
+    if (!Types.ObjectId.isValid(userId)) return [];
+
+    const objectUserId = new Types.ObjectId(userId);
+
+    // 1️⃣ Check if this user IS a consultant
+    const consultant = await this.consultantModel
+      .findOne({ userId: objectUserId }, { _id: 1 })
+      .lean();
+
+    if (consultant) {
+      // User owns this consultant profile → delete entire consultant
+      await this.consultantModel.deleteOne({ userId: objectUserId }).exec();
+      // Return the deleted consultant ID
+      return [consultant._id];
+    }
+
+    // 2️⃣ Remove this user's reviews from all consultants
+    const updateResult = await this.consultantModel.updateMany(
+      { 'reviews.userId': objectUserId },
+      { $pull: { reviews: { userId: objectUserId } } }
+    ).exec();
+
+    if (updateResult.modifiedCount > 0) {
+      // Get all consultant IDs affected
+      const affectedConsultants = await this.consultantModel
+        .find({ 'reviews.userId': objectUserId }, { _id: 1 })
+        .lean();
+
+      // Return array of affected consultant IDs (or empty if somehow none left)
+      return affectedConsultants.map(c => c._id);
+    }
+
+    // No consultant or reviews were affected
+    return [];
+  }
   async getConsultantDetails(id: string): Promise<ConsultantWithUserDetails> {
     const consultantDetails = await this.consultantModel
       .aggregate([
@@ -142,7 +178,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
   }
 
   async findByIds(
-    consultantIds: string[]
+    consultantIds: string[],
   ): Promise<ConsultantWithUserDetails[]> {
     return this.consultantModel
       .aggregate([
@@ -213,7 +249,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
 
   async findAll(
     page: number,
-    limit: number
+    limit: number,
   ): Promise<{
     data: ConsultantWithUserDetails[];
     total: number;
@@ -330,7 +366,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
     profession: string | null,
     page: number = 1,
     limit: number = 20,
-    sortBy?: "rating" | "hourlyRate" | "distance"
+    sortBy?: "rating" | "hourlyRate" | "distance",
   ): Promise<PaginatedResultDTO<ConsultantWithUserDetails>> {
     const skip = (page - 1) * limit;
 
@@ -377,7 +413,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
   // Helper methods for pipeline construction
   private buildBasePipeline(
     profession: string | null,
-    location: LocationDto | null
+    location: LocationDto | null,
   ): any[] {
     const pipeline: any[] = [];
     const matchStage: any = { isAvailable: true };
@@ -403,7 +439,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
           path: "$professionDetails",
           preserveNullAndEmptyArrays: true,
         },
-      }
+      },
     );
 
     // User details lookup
@@ -421,7 +457,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
           path: "$userDetails",
           preserveNullAndEmptyArrays: true,
         },
-      }
+      },
     );
 
     // Location filtering
@@ -437,7 +473,8 @@ export class MongoConsultantRepository implements ConsultantRepository {
             "userDetails.location.country": location.country,
           },
         });
-      } if (hasState && !hasCity) {
+      }
+      if (hasState && !hasCity) {
         pipeline.push({
           $match: {
             "userDetails.location.state": location.state,
@@ -500,7 +537,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
   private addSortingStage(
     pipeline: any[],
     sortBy?: string,
-    location?: LocationDto | null
+    location?: LocationDto | null,
   ): void {
     const sortStage: any = { $sort: {} };
 

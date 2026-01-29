@@ -7,7 +7,6 @@ import { AWSConfigService } from "infrastructure/config/aws.config";
 import { NotificationTemplateService } from "infrastructure/services/notification-template.service";
 import { NewsletterSubscribedEvent } from "../newsletter.event";
 
-
 @EventsHandler(NewsletterSubscribedEvent)
 export class NewsletterSubscribedHandler
     implements IEventHandler<NewsletterSubscribedEvent> {

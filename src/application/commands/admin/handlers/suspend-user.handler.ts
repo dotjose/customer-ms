@@ -1,17 +1,19 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { SuspendUserCommand } from "../admin.commands";
+import { CommandHandler, EventBus, ICommandHandler } from "@nestjs/cqrs";
 import { UserRepository } from "domain/user/user.repository";
 import { Inject, NotFoundException, BadRequestException } from "@nestjs/common";
 
 import { RedisService } from "infrastructure/services/redis.service";
+import { UserSuspendedEvent } from "application/events/user/user-suspended.event";
+import { SuspendUserCommand } from "../admin.commands";
 
 @CommandHandler(SuspendUserCommand)
 export class SuspendUserHandler implements ICommandHandler<SuspendUserCommand> {
   constructor(
     @Inject("UserRepository")
     private readonly userRepository: UserRepository,
-    private readonly redisService: RedisService
-  ) {}
+    private readonly redisService: RedisService,
+    private readonly eventBus: EventBus
+  ) { }
 
   async execute(command: SuspendUserCommand): Promise<void> {
     const { id } = command;
@@ -22,6 +24,7 @@ export class SuspendUserHandler implements ICommandHandler<SuspendUserCommand> {
       user.suspend();
       await this.userRepository.save(user);
       await this.redisService.del('stats:user-mss:platform');
+      this.eventBus.publish(new UserSuspendedEvent(user.id.toString(), user.firstName, user.email));
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -1,45 +1,45 @@
 import { Injectable } from "@nestjs/common";
 
 export interface NewsletterItem {
-  id: string;
-  title: string;
-  category: string;
-  location: string;
-  price: string;
-  image: string;
-  link: string;
+    id: string;
+    title: string;
+    category: string;
+    location: string;
+    price: string;
+    image: string;
+    link: string;
 }
 
 export interface NewsletterTemplateVars {
-  logo_url: string;
-  tagline: string;
-  hero_title: string;
-  hero_description: string;
-  hero_link: string;
+    logo_url: string;
+    tagline: string;
+    hero_title: string;
+    hero_description: string;
+    hero_link: string;
 
-  products: NewsletterItem[];
-  real_estate: NewsletterItem[];
-  jobs: NewsletterItem[];
-  professionals: NewsletterItem[];
-  news: NewsletterItem[];
+    products: NewsletterItem[];
+    real_estate: NewsletterItem[];
+    jobs: NewsletterItem[];
+    professionals: NewsletterItem[];
+    news: NewsletterItem[];
 
-  facebook_url: string;
-  instagram_url: string;
-  tiktok_url: string;
+    facebook_url: string;
+    instagram_url: string;
+    tiktok_url: string;
 
-  company_address: string;
-  contact_email: string;
-  contact_phone: string;
+    company_address: string;
+    contact_email: string;
+    contact_phone: string;
 
-  preferences_url: string;
-  unsubscribe_url: string;
-  current_year: number;
+    preferences_url: string;
+    unsubscribe_url: string;
+    current_year: number;
 }
 
 @Injectable()
 export class NotificationTemplateService {
-  getEmailTemplate(name: string, token: string): string {
-    return `
+    getEmailTemplate(name: string, token: string): string {
+        return `
       <html>
       <head>
         <style>
@@ -85,19 +85,19 @@ export class NotificationTemplateService {
       </body>
       </html>
     `;
-  }
+    }
 
-  contactUsEmailTemplate = ({
-    name,
-    email,
-    subject,
-    message,
-  }: {
-    name: string;
-    email: string;
-    subject: string;
-    message: string;
-  }) => `
+    contactUsEmailTemplate = ({
+        name,
+        email,
+        subject,
+        message,
+    }: {
+        name: string;
+        email: string;
+        subject: string;
+        message: string;
+    }) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -156,12 +156,16 @@ export class NotificationTemplateService {
 </html>
 `;
 
-  getSMSTemplate(token: string): string {
-    return `Your verification code is ${token}. It will expire in 5 minutes. Welcome to Our Platform!`;
-  }
+    getSMSTemplate(token: string): string {
+        return `Your verification code is ${token}. It will expire in 5 minutes. Welcome to Our Platform!`;
+    }
 
- getNewsLetterTemplate(preferences_url: string, unsubscribe_url: string, current_year: string): string {
-    return `<!DOCTYPE html>
+    getNewsLetterTemplate(
+        preferences_url: string,
+        unsubscribe_url: string,
+        current_year: string,
+    ): string {
+        return `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -333,7 +337,7 @@ export class NotificationTemplateService {
                             <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td align="center">
-                                        <img src="https://z-p3-scontent.fadd2-1.fna.fbcdn.net/v/t39.30808-6/558149099_122108114529006871_2798763732220282222_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeH5K3WizsR-i1xpz6OMWBVmtoqt33cWQri2iq3fdxZCuKmkxtlrdEoTlMUa2qAxc-fZxiqWL5cxPAxZz6y_0D5Z&_nc_ohc=S34oWHJUo-AQ7kNvwH9-bmq&_nc_oc=Adljb-EwJ1NJrhO0LSD7Bn9ZLqqy5jDpnOfZjbDPrKpQuQtlVdS3EqJrKnqr1SigXTc&_nc_zt=23&_nc_ht=z-p3-scontent.fadd2-1.fna&_nc_gid=l9mj9zux1rnZ797bA6aq1Q&oh=00_Afmnq0DUbFoG9wtVOrc5i9GiOl5qHpUPtaSnLtLAacbA0g&oe=695091A4"
+                                        <img src="https://meeting-bota-assets.s3.us-east-1.amazonaws.com/logo_vectorized.svg"
                                             alt="Habesha Network"
                                             style="width: 80px; height: 80px; display: block; margin: 0 auto 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); border-radius: 50%; background: #fff; padding: 5px;">
                                         <h1
@@ -820,38 +824,51 @@ export class NotificationTemplateService {
     </table>
 </body>
 </html>`;
-}
+    }
 
-  renderNewsletterContent(vars: Partial<NewsletterTemplateVars>): string {
-    const {
-      products = [],
-      real_estate = [],
-      jobs = [],
-      professionals = [],
-      news = [],
-    } = vars;
+    renderNewsletterContent(vars: Partial<NewsletterTemplateVars>): string {
+        const {
+            products = [],
+            real_estate = [],
+            jobs = [],
+            professionals = [],
+            news = [],
+        } = vars;
 
-    const renderItem = (item: NewsletterItem, showPrice = true, ctaText = 'View Details') => {
-      const isPlaceholder = item.image.includes('default') || !item.image.startsWith('http');
-      const initials = item.title.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const renderItem = (
+            item: NewsletterItem,
+            showPrice = true,
+            ctaText = "View Details",
+        ) => {
+            const isPlaceholder =
+                item.image.includes("default") || !item.image.startsWith("http");
+            const initials = item.title
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
 
-      return `
+            return `
         <table role="presentation" style="width: 100%; margin-bottom: 25px; background-color: #ffffff; border: 1px solid #eef2f6; border-radius: 12px; overflow: hidden; transition: all 0.3s ease;" cellpadding="0" cellspacing="0">
           <tr>
             <td style="width: 140px; vertical-align: top;" class="stack">
-              ${isPlaceholder ? `
+              ${isPlaceholder
+                    ? `
                 <div style="width: 140px; height: 140px; background: linear-gradient(135deg, #0047AB 0%, #002e6e 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 32px; font-weight: 700; font-family: sans-serif;">
                   ${initials}
                 </div>
-              ` : `
+              `
+                    : `
                 <img src="${item.image}" alt="${item.title}" style="width: 140px; height: 140px; display: block; object-fit: cover;">
-              `}
+              `
+                }
             </td>
             <td style="padding: 20px; vertical-align: top;" class="stack">
               <span style="display: inline-block; padding: 4px 10px; background-color: #f0f7ff; color: #0047AB; font-size: 11px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">${item.category}</span>
               <h3 style="margin: 0 0 8px; color: #1e293b; font-size: 18px; font-weight: 700; line-height: 1.3;">${item.title}</h3>
               <p style="margin: 0 0 12px; color: #64748b; font-size: 14px; line-height: 1.5;">📍 ${item.location}</p>
-              ${showPrice && item.price ? `<p style="margin: 0 0 15px; color: #0047AB; font-size: 20px; font-weight: 800;">${item.price}</p>` : ''}
+              ${showPrice && item.price ? `<p style="margin: 0 0 15px; color: #0047AB; font-size: 20px; font-weight: 800;">${item.price}</p>` : ""}
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="border-radius: 8px; background-color: #0047AB; box-shadow: 0 4px 6px rgba(0, 71, 171, 0.2);">
@@ -863,24 +880,33 @@ export class NotificationTemplateService {
           </tr>
         </table>
       `;
-    };
+        };
 
-    const renderGridItem = (item: NewsletterItem, ctaText = 'View Profile') => {
-      const isPlaceholder = item.image.includes('default') || !item.image.startsWith('http');
-      const initials = item.title.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const renderGridItem = (item: NewsletterItem, ctaText = "View Profile") => {
+            const isPlaceholder =
+                item.image.includes("default") || !item.image.startsWith("http");
+            const initials = item.title
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
 
-      return `
+            return `
         <td style="width: 50%; padding: 0 10px 20px 0; vertical-align: top;" class="stack">
           <table role="presentation" style="width: 100%; height: 100%; background-color: #ffffff; border: 1px solid #eef2f6; border-radius: 12px; transition: all 0.3s ease;" cellpadding="0" cellspacing="0">
             <tr>
               <td style="text-align: center; padding: 25px;">
-                ${isPlaceholder ? `
+                ${isPlaceholder
+                    ? `
                   <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #0047AB 0%, #002e6e 100%); display: block; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 24px; font-weight: 700;">
                     ${initials}
                   </div>
-                ` : `
+                `
+                    : `
                   <img src="${item.image}" alt="${item.title}" style="width: 80px; height: 80px; border-radius: 50%; display: block; margin: 0 auto 15px; object-fit: cover; border: 3px solid #f0f7ff;">
-                `}
+                `
+                }
                 <h3 style="margin: 0 0 5px; color: #1e293b; font-size: 16px; font-weight: 700;">${item.title}</h3>
                 <p style="margin: 0 0 8px; color: #0047AB; font-size: 13px; font-weight: 600;">${item.category}</p>
                 <p style="margin: 0 0 15px; color: #64748b; font-size: 12px; line-height: 1.5;">📍 ${item.location}</p>
@@ -896,94 +922,137 @@ export class NotificationTemplateService {
           </table>
         </td>
       `;
-    };
+        };
 
-    return `
+        return `
       <!-- Top Deals & Products -->
-      ${products.length > 0 ? `
+      ${products.length > 0
+                ? `
           <tr>
               <td class="mobile-padding" style="padding: 40px 40px 20px;">
                   <h2 style="margin: 0 0 25px; color: #1e293b; font-size: 24px; font-weight: 800;">🔥 Trending Deals</h2>
-                  ${products.map(item => renderItem(item, true, 'Buy Now')).join('')}
+                  ${products.map((item) => renderItem(item, true, "Buy Now")).join("")}
               </td>
           </tr>
-      ` : ''}
+      `
+                : ""
+            }
 
       <!-- Real Estate -->
-      ${real_estate.length > 0 ? `
+      ${real_estate.length > 0
+                ? `
           <tr>
               <td class="mobile-padding" style="padding: 20px 40px; background-color: #f8fafc;">
                   <h2 style="margin: 0 0 25px; color: #1e293b; font-size: 24px; font-weight: 800;">🏠 Featured Properties</h2>
-                  ${real_estate.map(item => renderItem(item, true, 'View Property')).join('')}
+                  ${real_estate.map((item) => renderItem(item, true, "View Property")).join("")}
               </td>
           </tr>
-      ` : ''}
+      `
+                : ""
+            }
 
       <!-- Jobs -->
-      ${jobs.length > 0 ? `
+      ${jobs.length > 0
+                ? `
           <tr>
               <td class="mobile-padding" style="padding: 40px 40px 20px;">
                   <h2 style="margin: 0 0 25px; color: #1e293b; font-size: 24px; font-weight: 800;">💼 Career Opportunities</h2>
-                  ${jobs.map(item => renderItem(item, true, 'Apply Now')).join('')}
+                  ${jobs.map((item) => renderItem(item, true, "Apply Now")).join("")}
               </td>
           </tr>
-      ` : ''}
+      `
+                : ""
+            }
 
       <!-- Professionals -->
-      ${professionals.length > 0 ? `
+      ${professionals.length > 0
+                ? `
           <tr>
               <td class="mobile-padding" style="padding: 20px 40px; background-color: #f8fafc;">
                   <h2 style="margin: 0 0 25px; color: #1e293b; font-size: 24px; font-weight: 800;">⭐ Featured Professionals</h2>
                   <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
                       <tr>
-                          ${professionals.slice(0, 2).map(item => renderGridItem(item)).join('')}
+                          ${professionals
+                    .slice(0, 2)
+                    .map((item) => renderGridItem(item))
+                    .join("")}
                       </tr>
-                      ${professionals.length > 2 ? `
+                      ${professionals.length > 2
+                    ? `
                           <tr>
-                              ${professionals.slice(2, 4).map(item => renderGridItem(item)).join('')}
+                              ${professionals
+                        .slice(2, 4)
+                        .map((item) => renderGridItem(item))
+                        .join("")}
                           </tr>
-                      ` : ''}
+                      `
+                    : ""
+                }
                   </table>
               </td>
           </tr>
-      ` : ''}
+      `
+                : ""
+            }
 
       <!-- Community News -->
-      ${news.length > 0 ? `
+      ${news.length > 0
+                ? `
           <tr>
               <td class="mobile-padding" style="padding: 40px 40px 20px;">
                   <h2 style="margin: 0 0 25px; color: #1e293b; font-size: 24px; font-weight: 800;">📰 Community Highlights</h2>
-                  ${news.map(item => renderItem(item, false, 'Read Story')).join('')}
+                  ${news.map((item) => renderItem(item, false, "Read Story")).join("")}
               </td>
           </tr>
-      ` : ''}
+      `
+                : ""
+            }
     `;
-  }
+    }
 
-  renderNewsletterEmail(vars: NewsletterTemplateVars): string {
-    const content = this.renderNewsletterContent(vars);
-    return this.renderNewsletterWrapper(content, vars);
-  }
+    renderNewsletterEmail(vars: NewsletterTemplateVars): string {
+        const content = this.renderNewsletterContent(vars);
+        return this.renderNewsletterWrapper(content, vars);
+    }
 
-  renderNewsletterWrapper(content: string, vars: Pick<NewsletterTemplateVars, 'logo_url' | 'tagline' | 'hero_title' | 'hero_description' | 'hero_link' | 'facebook_url' | 'instagram_url' | 'tiktok_url' | 'company_address' | 'contact_email' | 'contact_phone' | 'preferences_url' | 'unsubscribe_url' | 'current_year'>): string {
-    const {
-      logo_url,
-      tagline,
-      hero_title,
-      hero_description,
-      hero_link,
-      facebook_url,
-      instagram_url,
-      tiktok_url,
-      company_address,
-      contact_email,
-      contact_phone,
-      preferences_url,
-      unsubscribe_url,
-      current_year,
-    } = vars;
+    renderNewsletterWrapper(
+        content: string,
+        vars: Pick<
+            NewsletterTemplateVars,
+            | "logo_url"
+            | "tagline"
+            | "hero_title"
+            | "hero_description"
+            | "hero_link"
+            | "facebook_url"
+            | "instagram_url"
+            | "tiktok_url"
+            | "company_address"
+            | "contact_email"
+            | "contact_phone"
+            | "preferences_url"
+            | "unsubscribe_url"
+            | "current_year"
+        >,
+    ): string {
+        const {
+            logo_url,
+            tagline,
+            hero_title,
+            hero_description,
+            hero_link,
+            facebook_url,
+            instagram_url,
+            tiktok_url,
+            company_address,
+            contact_email,
+            contact_phone,
+            preferences_url,
+            unsubscribe_url,
+            current_year,
+        } = vars;
 
-    return `<!DOCTYPE html>
+        return `<!DOCTYPE html>
 <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
     <meta charset="UTF-8">
@@ -1078,5 +1147,216 @@ export class NotificationTemplateService {
     </table>
 </body>
 </html>`;
-  };
+    }
+
+    getAccountRestrictionTemplate(
+        user_name: string,
+        current_year: string,
+    ): string {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Access Restricted</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    .container {
+      width: 600px;
+      background: #ffffff;
+      margin: 0 auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    @media (max-width: 600px) {
+      .container {
+        width: 100% !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="center">
+
+      <table class="container" cellpadding="0" cellspacing="0">
+
+         <!-- Header -->
+                    <tr>
+                        <td style="background-color: #0047AB; padding: 30px 20px; text-align: center;">
+                            <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <img src="https://meeting-bota-assets.s3.us-east-1.amazonaws.com/logo_vectorized.svg"
+                                            alt="Habesha Network"
+                                            style="width: 80px; height: 80px; display: block; margin: 0 auto 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); border-radius: 50%; background: #fff; padding: 5px;">
+                                        <h1
+                                            style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                                            Habesha Network</h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+        <!-- Main -->
+        <tr>
+          <td style="padding:40px 32px;">
+            <p style="margin:0 0 16px;font-size:15px;color:#444;">
+              Hello ${user_name},
+            </p>
+
+            <p style="margin:0 0 16px;font-size:15px;color:#444;line-height:1.7;">
+              We identified activity associated with your Habesha Network account that violates our Community Standards.
+              As a result, your account has been restricted and is no longer accessible.
+            </p>
+
+            <p style="margin:0;font-size:15px;color:#B91C1C;font-weight:600;">
+              This action is effective immediately.
+            </p>
+
+            <!-- What this may include -->
+            <h3 style="margin:32px 0 12px;font-size:18px;color:#111;">
+              What this may include
+            </h3>
+
+            <p style="margin:0 0 14px;font-size:14px;color:#555;line-height:1.6;">
+              Account restrictions may occur due to content or behavior that violates our standards, including but not limited to:
+            </p>
+
+            <ul style="margin:0;padding-left:18px;font-size:14px;color:#555;line-height:1.7;">
+              <li>Harassment, hate speech, or abusive behavior</li>
+              <li>Sexually explicit, suggestive, or inappropriate content</li>
+              <li>Content that exploits, threatens, or harms individuals or groups</li>
+              <li>Listings, products, or services that violate marketplace policies</li>
+              <li>Repeated or severe violations of platform rules</li>
+            </ul>
+
+            <!-- Impact -->
+            <h3 style="margin:32px 0 12px;font-size:18px;color:#111;">
+              What this means
+            </h3>
+
+            <ul style="margin:0;padding-left:18px;font-size:14px;color:#555;line-height:1.7;">
+              <li>You cannot sign in to your account</li>
+              <li>Your content and listings are no longer visible</li>
+              <li>You cannot message or interact on the platform</li>
+              <li>Creating new accounts to bypass this action is not permitted</li>
+            </ul>
+
+            <!-- Appeal -->
+            <h3 style="margin:32px 0 12px;font-size:18px;color:#111;">
+              Appeal this decision
+            </h3>
+
+            <p style="margin:0 0 18px;font-size:14px;color:#555;line-height:1.6;">
+              If you believe this action was taken in error, you may submit an appeal. Our Trust & Safety team will review your request and respond after evaluation.
+            </p>
+
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background:#0047AB;border-radius:6px;">
+                  <a href="https://www.habeshanetwork.com/about"
+                     style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">
+                    Submit an Appeal
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Support -->
+            <p style="margin:28px 0 0;font-size:14px;color:#555;line-height:1.6;">
+              For more information, please review our policies or contact our support team.
+            </p>
+
+            <p style="margin:8px 0 0;font-size:14px;">
+              <a href="https://www.habeshanetwork.com/about" style="color:#0047AB;text-decoration:underline;font-weight:600;">
+                Contact Support
+              </a>
+            </p>
+          </td>
+        </tr>
+
+       <!-- Footer -->
+                    <tr>
+                        <td style="padding: 40px; background-color: #1a1a1a; text-align: center;">
+                            <table role="presentation" style="width: 100%;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                        <!-- Social Links -->
+                                        <table role="presentation" style="margin: 0 auto 35px;" cellpadding="0"
+                                            cellspacing="0" class="social-links">
+                                            <tr>
+                                                <td style="padding: 0 12px;">
+                                                    <a href="https://www.facebook.com/HabeshaNetwork"
+                                                        style="text-decoration: none;">
+                                                        <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png"
+                                                            alt="Facebook" style="width: 24px; filter: invert(1);">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 12px;">
+                                                    <a href="https://www.instagram.com/yehabeshanetwork"
+                                                        style="text-decoration: none;">
+                                                        <img src="https://cdn-icons-png.flaticon.com/512/733/733558.png"
+                                                            alt="Instagram" style="width: 24px; filter: invert(1);">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 12px;">
+                                                    <a href="https://www.tiktok.com/@habeshanetwork"
+                                                        style="text-decoration: none;">
+                                                        <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png"
+                                                            alt="TikTok" style="width: 24px; filter: invert(1);">
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Contact Info -->
+                                        <p style="margin: 0 0 15px; color: #cccccc; font-size: 14px; line-height: 1.6;">
+                                            <strong style="color: #ffffff;">Habesha Network</strong><br>Lavon, TX 75166,
+                                            USA<br>
+                                            Email: <a href="mailto:support@habeshanetwork.com"
+                                                style="color: #0047AB; text-decoration: none;">support@habeshanetwork.com</a><br>
+                                            Phone: +1 (855) 553-7873
+                                        </p>
+
+                                        <!-- Footer Links -->
+                                        <table role="presentation" style="margin: 20px auto 0;" cellpadding="0"
+                                            cellspacing="0">
+                                            <tr>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://www.habeshanetwork.com/legal/terms"
+                                                        style="color: #0047AB; text-decoration: underline; font-size: 13px;">Terms</a>
+                                                </td>
+                                                <td style="padding: 0 10px; color: #666666;">|</td>
+                                                <td style="padding: 0 10px;">
+                                                    <a href="https://www.habeshanetwork.com/legal/privacy"
+                                                        style="color: #0047AB; text-decoration: underline; font-size: 13px;">Privacy</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <p style="margin: 15px 0 0; color: #666666; font-size: 12px;">
+                                            © ${current_year} Habesha Network. All rights reserved.
+                                        </p>
+                                    </td>
+                                </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>`;
+    }
 }

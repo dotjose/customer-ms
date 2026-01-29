@@ -26,7 +26,7 @@ export class NewsletterCronService {
     private readonly awsConfig: AWSConfigService,
     private readonly tokenService: NewsletterTokenService,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async handleMonthlyNewsletter() {
@@ -172,8 +172,8 @@ export class NewsletterCronService {
       "https://c3igf19tk2.execute-api.us-east-1.amazonaws.com";
 
     const baseUrl =
-        this.configService.get<string>("APP_BASE_URL") ||
-        "https://www.habeshanetwork.com";
+      this.configService.get<string>("APP_BASE_URL") ||
+      "https://www.habeshanetwork.com";
 
     try {
       const [productsRes, realEstateRes, jobsRes, newsRes, consultantsRes] = await Promise.all([
@@ -194,7 +194,7 @@ export class NewsletterCronService {
 
       return {
         logo_url:
-          "https://z-p3-scontent.fadd2-1.fna.fbcdn.net/v/t39.30808-6/558149099_122108114529006871_2798763732220282222_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeH5K3WizsR-i1xpz6OMWBVmtoqt33cWQri2iq3fdxZCuKmkxtlrdEoTlMUa2qAxc-fZxiqWL5cxPAxZz6y_0D5Z&_nc_ohc=S34oWHJUo-AQ7kNvwH9-bmq&_nc_oc=Adljb-EwJ1NJrhO0LSD7Bn9ZLqqy5jDpnOfZjbDPrKpQuQtlVdS3EqJrKnqr1SigXTc&_nc_zt=23&_nc_ht=z-p3-scontent.fadd2-1.fna&_nc_gid=l9mj9zux1rnZ797bA6aq1Q&oh=00_Afmnq0DUbFoG9wtVOrc5i9GiOl5qHpUPtaSnLtLAacbA0g&oe=695091A4",
+          "https://meeting-bota-assets.s3.us-east-1.amazonaws.com/logo_vectorized.svg",
         tagline: "Your community marketplace & network",
         hero_title: "Explore the Best of Habesha Network",
         hero_description: "Your monthly roundup of premium deals, career moves, and community highlights is here.",
@@ -215,7 +215,7 @@ export class NewsletterCronService {
           ),
         professionals: (consultantsRes || [])
           .slice(0, 3)
-          .map((item) => 
+          .map((item) =>
             this.normalizeNewsletterItem(item, "Professionals", baseUrl)
           ),
         facebook_url:
@@ -255,9 +255,9 @@ export class NewsletterCronService {
       const formatted =
         typeof price === "number"
           ? new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-            }).format(price)
+            style: "currency",
+            currency: "USD",
+          }).format(price)
           : price;
       priceDisplay = formatted.toString();
     }
@@ -290,7 +290,7 @@ export class NewsletterCronService {
   private getFallbackData() {
     return {
       logo_url:
-        "https://z-p3-scontent.fadd2-1.fna.fbcdn.net/v/t39.30808-6/558149099_122108114529006871_2798763732220282222_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeH5K3WizsR-i1xpz6OMWBVmtoqt33cWQri2iq3fdxZCuKmkxtlrdEoTlMUa2qAxc-fZxiqWL5cxPAxZz6y_0D5Z&_nc_ohc=S34oWHJUo-AQ7kNvwH9-bmq&_nc_oc=Adljb-EwJ1NJrhO0LSD7Bn9ZLqqy5jDpnOfZjbDPrKpQuQtlVdS3EqJrKnqr1SigXTc&_nc_zt=23&_nc_ht=z-p3-scontent.fadd2-1.fna&_nc_gid=l9mj9zux1rnZ797bA6aq1Q&oh=00_Afmnq0DUbFoG9wtVOrc5i9GiOl5qHpUPtaSnLtLAacbA0g&oe=695091A4",
+        "https://meeting-bota-assets.s3.us-east-1.amazonaws.com/logo_vectorized.svg",
       tagline: "Your community marketplace & network",
       hero_image_url: "https://habeshanetwork.com/hero.jpg",
       hero_title: "Explore the Best of Habesha Network",

@@ -1,19 +1,18 @@
 import { EventsHandler, IEventHandler } from "@nestjs/cqrs";
-import { ConsultantProfileUpdatedEvent } from "../consultant-profile-updated.event";
+import { Logger } from "@nestjs/common";
 import { ElasticsearchService } from "infrastructure/services/elasticsearch.service";
 import { RedisService } from "infrastructure/services/redis.service";
-import { Logger } from "@nestjs/common";
+import { ConsultantProfileUpdatedEvent } from "../consultant-profile-updated.event";
 
 @EventsHandler(ConsultantProfileUpdatedEvent)
 export class ConsultantProfileUpdatedHandler
-  implements IEventHandler<ConsultantProfileUpdatedEvent>
-{
+  implements IEventHandler<ConsultantProfileUpdatedEvent> {
   private readonly logger = new Logger(ConsultantProfileUpdatedHandler.name);
 
   constructor(
     private readonly elasticsearchService: ElasticsearchService,
     private readonly redisService: RedisService
-  ) {}
+  ) { }
 
   async handle(event: ConsultantProfileUpdatedEvent): Promise<void> {
     const { consultantId, profile } = event;

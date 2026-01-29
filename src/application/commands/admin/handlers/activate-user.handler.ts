@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { ActivateUserCommand } from "../admin.commands";
 import { UserRepository } from "domain/user/user.repository";
 import { Inject, NotFoundException } from "@nestjs/common";
 
 import { RedisService } from "infrastructure/services/redis.service";
+import { ActivateUserCommand } from "../admin.commands";
 
 @CommandHandler(ActivateUserCommand)
 export class ActivateUserHandler implements ICommandHandler<ActivateUserCommand> {
@@ -11,7 +11,7 @@ export class ActivateUserHandler implements ICommandHandler<ActivateUserCommand>
     @Inject("UserRepository")
     private readonly userRepository: UserRepository,
     private readonly redisService: RedisService
-  ) {}
+  ) { }
 
   async execute(command: ActivateUserCommand): Promise<void> {
     const { id } = command;
