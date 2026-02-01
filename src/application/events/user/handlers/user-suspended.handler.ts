@@ -30,10 +30,10 @@ export class UserSuspendedHandler implements IEventHandler<UserSuspendedEvent> {
             "https://c3igf19tk2.execute-api.us-east-1.amazonaws.com";
 
         const deletionEndpoints = [
-            `${BASE_API_URL}/product-api/products/delete/all/${userId}`,
-            `${BASE_API_URL}/realstate-api/properties/delete/all/${userId}`,
-            `${BASE_API_URL}/job-api/jobs/delete/all/${userId}`,
-            `${BASE_API_URL}/post-api/posts/delete/all/${userId}`,
+            `${BASE_API_URL}/product-api/products/all/${userId}`,
+            `${BASE_API_URL}/realstate-api/properties/all/${userId}`,
+            `${BASE_API_URL}/job-api/jobs/all/${userId}`,
+            `${BASE_API_URL}/post-api/posts/all/${userId}`,
         ];
 
         try {
