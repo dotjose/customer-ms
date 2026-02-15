@@ -34,12 +34,11 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
     // 1. Fetch User
     const user = await this.userRepository.findByEmailOrPhone(normalizedEmail);
 
-    // 2. Silent Failure: If user not found, return generic success message to prevent enumeration
     if (!user) {
       this.logger.warn(
         `Password reset ignored: User not found for ${this.maskEmail(normalizedEmail)}`,
       );
-      return { message: "Password reset instructions sent." };
+      return new NotFoundException("User not found with the provided details.");
     }
 
     try {
@@ -66,6 +65,7 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
 
       this.logger.log(`Password reset email triggered for user: ${user.id}`);
       return { message: "Password reset instructions sent." };
+      
     } catch (error) {
       this.logger.warn(
         `Password reset blocked for user ${user.id}: ${error.message}`,
