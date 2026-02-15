@@ -72,7 +72,7 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
         `Password reset blocked for user ${user.id}: ${error.message}`,
       );
       throw new BadRequestException(
-        `An error occurred while processing your request. ${error.message}`,
+        "An error occurred while processing your request. Please try again later.",
       );
     }
   }
