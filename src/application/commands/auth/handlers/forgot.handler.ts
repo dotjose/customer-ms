@@ -38,7 +38,8 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
       this.logger.warn(
         `Password reset ignored: User not found for ${this.maskEmail(normalizedEmail)}`,
       );
-      return new NotFoundException("User not found with the provided details.");
+      
+      throw new NotFoundException("User not found with the provided details.");
     }
 
     try {
@@ -65,13 +66,13 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
 
       this.logger.log(`Password reset email triggered for user: ${user.id}`);
       return { message: "Password reset instructions sent." };
-      
+
     } catch (error) {
       this.logger.warn(
         `Password reset blocked for user ${user.id}: ${error.message}`,
       );
-      return new BadRequestException(
-        "An error occurred while processing your request.",
+      throw new BadRequestException(
+        `An error occurred while processing your request. ${error.message}`,
       );
     }
   }
