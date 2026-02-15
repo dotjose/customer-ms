@@ -12,7 +12,7 @@ export class MongoUserRepository implements UserRepository {
   constructor(
     @InjectModel(UserDocument.name)
     private readonly userModel: Model<UserDocument>
-  ) {}
+  ) { }
 
   async findByEmailAndPhone(
     email: string,
@@ -56,18 +56,40 @@ export class MongoUserRepository implements UserRepository {
   }
 
   async save(user: User): Promise<UserResponseDto> {
-    // Convert the user entity to a plain object
     const userObj = user.toObject();
-    // Create a shallow copy and exclude invalid location data
-    const transformedUserObj = {
-      ...userObj,
-      ...(userObj.location?.coordinates?.length ? {} : { location: undefined }),
-    };
+
+    const updateObj: any = {}; // <-- allow dynamic assignment
+
+    Object.entries(userObj).forEach(([key, value]) => {
+      if (value === undefined) return;
+
+      if (key === "location") {
+        const loc = value as {
+          type?: "Point";
+          coordinates?: [number, number];
+          address?: string;
+          city?: string;
+          state?: string;
+          country?: string;
+        } | undefined;
+
+        if (loc?.coordinates?.length === 2 && loc.address) {
+          updateObj.location = loc;
+        } else {
+          console.warn("Skipping invalid location update:", loc);
+        }
+      } else {
+        // Keep other fields as is
+        updateObj[key] = value;
+      }
+    });
+
     const userDoc = await this.userModel.findOneAndUpdate(
       { _id: user.id },
-      transformedUserObj,
+      { $set: updateObj },
       { upsert: true, new: true }
     );
+
     return UserMapper.toResponse(new User(userDoc.toObject(), userDoc._id));
   }
 
@@ -81,7 +103,7 @@ export class MongoUserRepository implements UserRepository {
     const filter: any = {
       roles: { $ne: "ADMIN" }
     };
-    
+
     if (search) {
       filter.$or = [
         { firstName: { $regex: search, $options: "i" } },

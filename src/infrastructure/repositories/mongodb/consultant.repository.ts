@@ -51,6 +51,7 @@ export class MongoConsultantRepository implements ConsultantRepository {
     // No consultant or reviews were affected
     return [];
   }
+  
   async getConsultantDetails(id: string): Promise<ConsultantWithUserDetails> {
     const consultantDetails = await this.consultantModel
       .aggregate([
