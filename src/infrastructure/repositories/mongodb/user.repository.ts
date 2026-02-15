@@ -57,53 +57,48 @@ export class MongoUserRepository implements UserRepository {
 
   async save(user: User): Promise<UserResponseDto> {
     const userObj = user.toObject();
+    // Exclude _id from the update object (it's the query filter)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, location, ...otherFields } = userObj;
 
-    const updateObj: any = {}; // dynamic assignment
+    const updateObj: any = {};
 
-    Object.entries(userObj).forEach(([key, value]) => {
-      if (value === undefined) return;
-
-      if (key === "location") {
-        const loc = value as {
-          type?: "Point";
-          coordinates?: [number, number];
-          address?: string;
-          city?: string;
-          state?: string;
-          country?: string;
-        } | undefined;
-
-        if (!loc) return;
-
-        // Get current location from DB to compare
-        // (optional, avoids unnecessary $set)
-        // We will assume userDoc has the latest saved data
-        // You can also cache this or fetch beforehand if needed
-
-        const updatedLoc: any = {};
-        if (loc.coordinates?.length === 2) updatedLoc.coordinates = loc.coordinates;
-        if (loc.address) updatedLoc.address = loc.address;
-        if (loc.city) updatedLoc.city = loc.city;
-        if (loc.state) updatedLoc.state = loc.state;
-        if (loc.country) updatedLoc.country = loc.country;
-
-        if (Object.keys(updatedLoc).length > 0) {
-          updateObj.location = updatedLoc;
-        } else {
-          // Skip if nothing meaningful to update
-          console.warn("Skipping invalid location update:", loc);
-        }
-
-      } else {
-        // Keep other fields as is
+    // 1. Dynamically update all user fields (excluding location/undefined)
+    Object.entries(otherFields).forEach(([key, value]) => {
+      if (value !== undefined) {
         updateObj[key] = value;
       }
     });
 
-    // Only call MongoDB if there is something to update
-    if (Object.keys(updateObj).length === 0) {
-      console.info("No updates to perform for user:", user.id);
-      return UserMapper.toResponse(user); // return existing object
+    // 2. Handle Location Update Logic
+    if (location) {
+      const hasCoordinates =
+        Array.isArray(location.coordinates) &&
+        location.coordinates.length === 2 &&
+        typeof location.coordinates[0] === "number" &&
+        !isNaN(location.coordinates[0]) &&
+        typeof location.coordinates[1] === "number" &&
+        !isNaN(location.coordinates[1]);
+
+      const hasAddress =
+        typeof location.address === "string" && location.address.trim().length > 0;
+
+      // Update location ONLY if coordinates exist AND address is not empty
+      if (hasCoordinates && hasAddress) {
+        updateObj.location = {
+          type: "Point",
+          coordinates: location.coordinates,
+          address: location.address,
+          // Save optional fields as empty strings if missing
+          city: location.city || "",
+          state: location.state || "",
+          country: location.country || "",
+        };
+      }
+      // If coordinates or address are missing, we intentionally do NOT add 'location'
+      // to updateObj. This effectively skips updating the location field in MongoDB,
+      // creating a safety net that avoids overwriting valid existing location data
+      // with partial or empty values.
     }
 
     const userDoc = await this.userModel.findOneAndUpdate(

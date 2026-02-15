@@ -12,14 +12,14 @@ export enum UserStatus {
 
 export interface SocialLink {
   platform:
-    | "facebook"
-    | "twitter"
-    | "instagram"
-    | "linkedin"
-    | "youtube"
-    | "tiktok"
-    | "whatsapp"
-    | "telegram";
+  | "facebook"
+  | "twitter"
+  | "instagram"
+  | "linkedin"
+  | "youtube"
+  | "tiktok"
+  | "whatsapp"
+  | "telegram";
   url: string;
 }
 
@@ -40,6 +40,9 @@ export interface UserProps {
     type?: "Point";
     coordinates?: [number, number]; // [longitude, latitude]
     address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
   };
   bio?: string;
   socialLinks?: SocialLink[];
@@ -164,12 +167,18 @@ export class User extends AggregateRoot {
   public updateLocation(
     longitude: number,
     latitude: number,
-    address: string
+    address: string,
+    city?: string,
+    state?: string,
+    country?: string
   ): void {
     this.props.location = {
       type: "Point",
       coordinates: [longitude, latitude],
       address,
+      city,
+      state,
+      country,
     };
     this.props.updatedAt = new Date();
     // this.apply(new UserLocationUpdatedEvent(this.id, this.props.location));
