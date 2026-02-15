@@ -12,7 +12,7 @@ export class MongoUserRepository implements UserRepository {
   constructor(
     @InjectModel(UserDocument.name)
     private readonly userModel: Model<UserDocument>
-  ) { }
+  ) {}
 
   async findByEmailAndPhone(
     email: string,
@@ -56,46 +56,18 @@ export class MongoUserRepository implements UserRepository {
   }
 
   async save(user: User): Promise<UserResponseDto> {
+    // Convert the user entity to a plain object
     const userObj = user.toObject();
-    // Exclude _id from the update object (it's the query filter)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _id, location, ...otherFields } = userObj;
-
-    const updateObj: any = {};
-
-    // 1. Dynamically update all user fields (excluding location/undefined)
-    Object.entries(otherFields).forEach(([key, value]) => {
-      if (value !== undefined) {
-        updateObj[key] = value;
-      }
-    });
-
-    // 2. Handle Location Update Logic
-    if (location) {
-      const hasCoordinates =
-        Array.isArray(location.coordinates) &&
-        location.coordinates.length === 2 &&
-        !location.coordinates.includes(NaN);
-
-      // Only skip coordinates, not other fields
-      const updatedLoc: any = {};
-
-      if (hasCoordinates) updatedLoc.coordinates = location.coordinates;
-      if (location.address) updatedLoc.address = location.address;
-      if (location.city) updatedLoc.city = location.city;
-      if (location.state) updatedLoc.state = location.state;
-      if (location.country) updatedLoc.country = location.country;
-
-      // Save location ONLY if we have at least 1 field
-      if (Object.keys(updatedLoc).length > 0) updateObj.location = updatedLoc;
-    }
-
+    // Create a shallow copy and exclude invalid location data
+    const transformedUserObj = {
+      ...userObj,
+      ...(userObj.location?.coordinates?.length ? {} : { location: undefined }),
+    };
     const userDoc = await this.userModel.findOneAndUpdate(
       { _id: user.id },
-      { $set: updateObj },
+      transformedUserObj,
       { upsert: true, new: true }
     );
-
     return UserMapper.toResponse(new User(userDoc.toObject(), userDoc._id));
   }
 
@@ -109,7 +81,7 @@ export class MongoUserRepository implements UserRepository {
     const filter: any = {
       roles: { $ne: "ADMIN" }
     };
-
+    
     if (search) {
       filter.$or = [
         { firstName: { $regex: search, $options: "i" } },
