@@ -58,7 +58,7 @@ export class MongoUserRepository implements UserRepository {
   async save(user: User): Promise<UserResponseDto> {
     const userObj = user.toObject();
 
-    const updateObj: any = {}; // <-- allow dynamic assignment
+    const updateObj: any = {}; // dynamic assignment
 
     Object.entries(userObj).forEach(([key, value]) => {
       if (value === undefined) return;
@@ -73,16 +73,38 @@ export class MongoUserRepository implements UserRepository {
           country?: string;
         } | undefined;
 
-        if (loc?.coordinates?.length === 2 && loc.address) {
-          updateObj.location = loc;
+        if (!loc) return;
+
+        // Get current location from DB to compare
+        // (optional, avoids unnecessary $set)
+        // We will assume userDoc has the latest saved data
+        // You can also cache this or fetch beforehand if needed
+
+        const updatedLoc: any = {};
+        if (loc.coordinates?.length === 2) updatedLoc.coordinates = loc.coordinates;
+        if (loc.address) updatedLoc.address = loc.address;
+        if (loc.city) updatedLoc.city = loc.city;
+        if (loc.state) updatedLoc.state = loc.state;
+        if (loc.country) updatedLoc.country = loc.country;
+
+        if (Object.keys(updatedLoc).length > 0) {
+          updateObj.location = updatedLoc;
         } else {
+          // Skip if nothing meaningful to update
           console.warn("Skipping invalid location update:", loc);
         }
+
       } else {
         // Keep other fields as is
         updateObj[key] = value;
       }
     });
+
+    // Only call MongoDB if there is something to update
+    if (Object.keys(updateObj).length === 0) {
+      console.info("No updates to perform for user:", user.id);
+      return UserMapper.toResponse(user); // return existing object
+    }
 
     const userDoc = await this.userModel.findOneAndUpdate(
       { _id: user.id },
