@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
-import { Inject, Logger } from "@nestjs/common";
+import { Inject, Logger, NotFoundException } from "@nestjs/common";
 
 import { UserRepository } from "domain/user/user.repository";
 import { UserSecurityService } from "domain/user/services/user-security.service";
@@ -32,7 +32,7 @@ export class ForgotPasswordHandler
     // 2. Silent Failure: If user not found, return random success message anyway
     if (!user) {
       this.logger.warn(`Password reset ignored: User not found for ${this.maskEmail(normalizedEmail)}`);
-    return { message: "Password reset instructions sent." };
+      throw new NotFoundException("User not found with the provided information.");
     }
 
     try {
@@ -45,7 +45,8 @@ export class ForgotPasswordHandler
       );
 
       user.setResetToken(resetToken);
-      await this.userRepository.save(user);
+      const result = await this.userRepository.save(user);
+      console.log(result, "wtf!")
 
       // 5. Publish Event (Sends Email)
       this.eventBus.publish(
@@ -58,14 +59,14 @@ export class ForgotPasswordHandler
       );
 
       this.logger.log(`Password reset email triggered for user: ${user.id}`);
+      
+      return { message: "Password reset instructions sent." };
 
     } catch (error) {
         // 6. Silent Failure: If validation failed (e.g. Suspended), log it but return success
         this.logger.warn(`Password reset blocked for user ${user.id}: ${error.message}`);
         // We do NOT rethrow. We return the same generic message.
     }
-
-    return { message: "Password reset instructions sent." };
   }
 
   private maskEmail(email: string): string {
