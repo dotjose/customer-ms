@@ -75,30 +75,19 @@ export class MongoUserRepository implements UserRepository {
       const hasCoordinates =
         Array.isArray(location.coordinates) &&
         location.coordinates.length === 2 &&
-        typeof location.coordinates[0] === "number" &&
-        !isNaN(location.coordinates[0]) &&
-        typeof location.coordinates[1] === "number" &&
-        !isNaN(location.coordinates[1]);
+        !location.coordinates.includes(NaN);
 
-      const hasAddress =
-        typeof location.address === "string" && location.address.trim().length > 0;
+      // Only skip coordinates, not other fields
+      const updatedLoc: any = {};
 
-      // Update location ONLY if coordinates exist AND address is not empty
-      if (hasCoordinates && hasAddress) {
-        updateObj.location = {
-          type: "Point",
-          coordinates: location.coordinates,
-          address: location.address,
-          // Save optional fields as empty strings if missing
-          city: location.city || "",
-          state: location.state || "",
-          country: location.country || "",
-        };
-      }
-      // If coordinates or address are missing, we intentionally do NOT add 'location'
-      // to updateObj. This effectively skips updating the location field in MongoDB,
-      // creating a safety net that avoids overwriting valid existing location data
-      // with partial or empty values.
+      if (hasCoordinates) updatedLoc.coordinates = location.coordinates;
+      if (location.address) updatedLoc.address = location.address;
+      if (location.city) updatedLoc.city = location.city;
+      if (location.state) updatedLoc.state = location.state;
+      if (location.country) updatedLoc.country = location.country;
+
+      // Save location ONLY if we have at least 1 field
+      if (Object.keys(updatedLoc).length > 0) updateObj.location = updatedLoc;
     }
 
     const userDoc = await this.userModel.findOneAndUpdate(
