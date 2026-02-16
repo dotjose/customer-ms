@@ -1,10 +1,11 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { ConflictException, Inject, Logger } from "@nestjs/common";
+import { Types } from "mongoose";
+
 import { User, UserProps } from "domain/user/user.entity";
 import { UserRepository } from "domain/user/user.repository";
 import { UserResponseDto } from "presentation/dtos/auth.dto";
 import { UpdateUserCommand } from "../update-user.command";
-import { Types } from "mongoose";
 
 @CommandHandler(UpdateUserCommand)
 export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
@@ -12,7 +13,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
   constructor(
     @Inject("UserRepository") private readonly userRepository: UserRepository
-  ) {}
+  ) { }
 
   async execute(command: UpdateUserCommand): Promise<UserResponseDto> {
     const { profile } = command;
@@ -84,11 +85,45 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     const updates: Partial<UserProps> = {};
 
     for (const field of allowedFields) {
-      if (
-        profile[field] !== undefined &&
-        profile[field] !== existingUser[field]
-      ) {
-        updates[field] = profile[field];
+      const incomingValue = profile[field];
+
+      if (incomingValue === undefined) continue;
+
+      // 🔥 Special handling for location
+      if (field === "location") {
+        const existingLocation = existingUser.location;
+
+        if (!incomingValue) continue;
+
+        const hasValidCoordinates =
+          Array.isArray(incomingValue.coordinates) &&
+          incomingValue.coordinates.length === 2 &&
+          !incomingValue.coordinates.includes(NaN);
+
+        const hasValidAddress =
+          typeof incomingValue.address === "string" &&
+          incomingValue.address.trim().length > 0;
+
+        // If location is incomplete → ignore it completely
+        if (!hasValidCoordinates || !hasValidAddress) {
+          continue;
+        }
+
+        // Merge safely instead of overwriting blindly
+        updates.location = {
+          ...existingLocation,
+          ...incomingValue,
+          city: incomingValue.city ?? existingLocation?.city ?? "",
+          state: incomingValue.state ?? existingLocation?.state ?? "",
+          country: incomingValue.country ?? existingLocation?.country ?? "",
+        };
+
+        continue;
+      }
+
+      // Normal fields
+      if (incomingValue !== existingUser[field]) {
+        updates[field] = incomingValue;
       }
     }
 
