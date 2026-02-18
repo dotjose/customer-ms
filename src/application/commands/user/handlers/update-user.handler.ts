@@ -120,9 +120,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
             city: existingUser.location.address !== loc.address ? loc.city : existingUser.location.city,
             state: existingUser.location.address !== loc.address ? loc.state : existingUser.location.state,
           };
-          console.log(loc);
-          console.log(locationPayload);
-          console.log("updated location", locationPayload);
           updates.location = locationPayload;
         }
         continue;
