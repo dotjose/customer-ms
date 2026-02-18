@@ -67,10 +67,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     return result;
   }
 
-  private filterValidUpdates(
-    profile: Partial<UserProps>,
-    existingUser: User,
-  ): Partial<UserProps> {
+  private filterValidUpdates(profile: Partial<UserProps>, existing?: UserProps): Partial<UserProps> {
     const allowedFields: (keyof UserProps)[] = [
       "avatar",
       "firstName",
@@ -88,11 +85,10 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
         typeof value === "object" &&
         Array.isArray(value.coordinates) &&
         value.coordinates.length === 2 &&
-        value.coordinates.every(
-          (c) => typeof c === "number" && !Number.isNaN(c),
-        ) &&
+        value.coordinates.every((c) => typeof c === "number" && !Number.isNaN(c)) &&
         typeof value.address === "string" &&
         value.address.trim().length > 0 &&
+        typeof value.state === "string" &&
         typeof value.country === "string" &&
         value.country.trim().length > 0
       );
@@ -100,7 +96,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
     for (const field of allowedFields) {
       const incomingValue = profile[field];
-
       if (incomingValue === undefined) continue;
 
       if (field === "location") {
@@ -109,15 +104,21 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
             type: "Point",
             coordinates: incomingValue.coordinates,
             address: incomingValue.address.trim(),
-            city: incomingValue.city?.trim(),
-            state: incomingValue.state?.trim(),
-            country: incomingValue.country?.trim(),
+            country: incomingValue.country.trim(),
+            city:
+              incomingValue.city?.trim() ||
+              existing?.location?.city ||
+              undefined, // preserve if missing
+            state:
+              incomingValue.state?.trim() ||
+              existing?.location?.state ||
+              undefined, // preserve if missing
           };
         }
-        continue; // skip normal assignment for location
+        continue; // skip invalid location
       }
 
-      // ✅ For other fields: assign safely using index signature with type assertion
+      // Normal fields
       (updates as any)[field] = incomingValue;
     }
 
