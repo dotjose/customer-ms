@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 
 import { User, UserProps } from "domain/user/user.entity";
 import { UserRepository } from "domain/user/user.repository";
-import { UserResponseDto } from "presentation/dtos/auth.dto";
+import { LocationDto, UserResponseDto } from "presentation/dtos/auth.dto";
 import { UpdateUserCommand } from "../update-user.command";
 
 @CommandHandler(UpdateUserCommand)
@@ -12,7 +12,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
   private readonly logger = new Logger(UpdateUserHandler.name);
 
   constructor(
-    @Inject("UserRepository") private readonly userRepository: UserRepository
+    @Inject("UserRepository") private readonly userRepository: UserRepository,
   ) { }
 
   async execute(command: UpdateUserCommand): Promise<UserResponseDto> {
@@ -54,7 +54,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
     const updatedUser = new User(
       updatedUserProps,
-      new Types.ObjectId(existingUser.id)
+      new Types.ObjectId(existingUser.id),
     );
 
     // Save updated user
@@ -67,14 +67,11 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     return result;
   }
 
-  /**
-   * Filters out undefined or invalid fields from the update request.
-   */
   private filterValidUpdates(
     profile: Partial<UserProps>,
-    existingUser: User
+    existingUser: User,
   ): Partial<UserProps> {
-    const allowedFields = [
+    const allowedFields: (keyof UserProps)[] = [
       "avatar",
       "firstName",
       "lastName",
@@ -82,49 +79,46 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       "socialLinks",
       "location",
     ];
+
     const updates: Partial<UserProps> = {};
+
+    const isValidLocation = (value: any): value is LocationDto => {
+      return (
+        value &&
+        typeof value === "object" &&
+        Array.isArray(value.coordinates) &&
+        value.coordinates.length === 2 &&
+        value.coordinates.every(
+          (c) => typeof c === "number" && !Number.isNaN(c),
+        ) &&
+        typeof value.address === "string" &&
+        value.address.trim().length > 0 &&
+        typeof value.country === "string" &&
+        value.country.trim().length > 0
+      );
+    };
 
     for (const field of allowedFields) {
       const incomingValue = profile[field];
 
       if (incomingValue === undefined) continue;
 
-      // 🔥 Special handling for location
       if (field === "location") {
-        const existingLocation = existingUser.location;
-
-        if (!incomingValue) continue;
-
-        const hasValidCoordinates =
-          Array.isArray(incomingValue.coordinates) &&
-          incomingValue.coordinates.length === 2 &&
-          !incomingValue.coordinates.includes(NaN);
-
-        const hasValidAddress =
-          typeof incomingValue.address === "string" &&
-          incomingValue.address.trim().length > 0;
-
-        // If location is incomplete → ignore it completely
-        if (!hasValidCoordinates || !hasValidAddress) {
-          continue;
+        if (isValidLocation(incomingValue)) {
+          updates.location = {
+            type: "Point",
+            coordinates: incomingValue.coordinates,
+            address: incomingValue.address.trim(),
+            city: incomingValue.city?.trim(),
+            state: incomingValue.state?.trim(),
+            country: incomingValue.country?.trim(),
+          };
         }
-
-        // Merge safely instead of overwriting blindly
-        updates.location = {
-          ...existingLocation,
-          ...incomingValue,
-          city: incomingValue.city ?? existingLocation?.city ?? "",
-          state: incomingValue.state ?? existingLocation?.state ?? "",
-          country: incomingValue.country ?? existingLocation?.country ?? "",
-        };
-
-        continue;
+        continue; // skip normal assignment for location
       }
 
-      // Normal fields
-      if (incomingValue !== existingUser[field]) {
-        updates[field] = incomingValue;
-      }
+      // ✅ For other fields: assign safely using index signature with type assertion
+      (updates as any)[field] = incomingValue;
     }
 
     return updates;

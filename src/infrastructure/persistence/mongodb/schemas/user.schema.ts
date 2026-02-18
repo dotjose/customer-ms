@@ -54,6 +54,8 @@ export class UserDocument extends Document {
           "Coordinates must contain exactly 2 valid numbers (latitude and longitude)",
       },
     },
+    address: { type: String, required: true },
+    country: { type: String, required: true },
   })
   location?: {
     type?: "Point";
