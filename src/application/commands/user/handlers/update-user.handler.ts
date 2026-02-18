@@ -67,7 +67,10 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     return result;
   }
 
-  private filterValidUpdates(profile: Partial<UserProps>, existing?: UserProps): Partial<UserProps> {
+  private filterValidUpdates(
+    profile: Partial<UserProps>,
+    existingUser: User,
+  ): Partial<UserProps> {
     const allowedFields: (keyof UserProps)[] = [
       "avatar",
       "firstName",
@@ -85,10 +88,11 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
         typeof value === "object" &&
         Array.isArray(value.coordinates) &&
         value.coordinates.length === 2 &&
-        value.coordinates.every((c) => typeof c === "number" && !Number.isNaN(c)) &&
+        value.coordinates.every(
+          (c) => typeof c === "number" && !Number.isNaN(c),
+        ) &&
         typeof value.address === "string" &&
         value.address.trim().length > 0 &&
-        typeof value.state === "string" &&
         typeof value.country === "string" &&
         value.country.trim().length > 0
       );
@@ -98,27 +102,33 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       const incomingValue = profile[field];
       if (incomingValue === undefined) continue;
 
+      // Location field
       if (field === "location") {
-        if (isValidLocation(incomingValue)) {
-          updates.location = {
+        if (
+          incomingValue &&
+          typeof incomingValue === "object" &&
+          isValidLocation(incomingValue)
+        ) {
+          const loc = incomingValue as LocationDto;
+
+          // Only include optional fields if they exist
+          const locationPayload: Partial<LocationDto> = {
             type: "Point",
-            coordinates: incomingValue.coordinates,
-            address: incomingValue.address.trim(),
-            country: incomingValue.country.trim(),
-            city:
-              incomingValue.city?.trim() ||
-              existing?.location?.city ||
-              undefined, // preserve if missing
-            state:
-              incomingValue.state?.trim() ||
-              existing?.location?.state ||
-              undefined, // preserve if missing
+            coordinates: loc.coordinates,
+            address: loc.address.trim(),
+            country: loc.country.trim(),
+            city: existingUser.location.address !== loc.address ? loc.city : existingUser.location.city,
+            state: existingUser.location.address !== loc.address ? loc.state : existingUser.location.state,
           };
+          console.log(loc);
+          console.log(locationPayload);
+          console.log("updated location", locationPayload);
+          updates.location = locationPayload;
         }
-        continue; // skip invalid location
+        continue;
       }
 
-      // Normal fields
+      // Other fields: assign as-is
       (updates as any)[field] = incomingValue;
     }
 
