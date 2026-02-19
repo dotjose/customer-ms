@@ -128,7 +128,6 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       // Other fields: assign as-is
       (updates as any)[field] = incomingValue;
     }
-    console.log("updates triggered", updates);
     return updates;
   }
 }
